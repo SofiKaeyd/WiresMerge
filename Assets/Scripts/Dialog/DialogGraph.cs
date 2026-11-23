@@ -62,6 +62,8 @@ public class DialogNode
 {
     public const string SourceImageSpriteName = "SourceImage";
     public const string RecipientImageSpriteName = "RecipientImage";
+    public const string StartAnimation1Parameter = "startAnimation1";
+    public const string StartAnimation2Parameter = "startAnimation2";
 
     public int Id;
     public string Speaker;
@@ -79,6 +81,20 @@ public class DialogNode
 
     public bool HasInlineImages =>
         !string.IsNullOrWhiteSpace(SourceImageUrl) || !string.IsNullOrWhiteSpace(RecipientImageUrl);
+
+    public bool HasParameter(string parameter)
+    {
+        if (string.IsNullOrWhiteSpace(parameter))
+            return false;
+
+        foreach (var name in Parameters.Split(',', StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (string.Equals(name.Trim(), parameter, StringComparison.Ordinal))
+                return true;
+        }
+
+        return false;
+    }
 
     public string FormattedText
     {
@@ -98,7 +114,13 @@ public class DialogNode
 
             var paramNames = Parameters.Split(',', StringSplitOptions.RemoveEmptyEntries);
             foreach (var name in paramNames)
+            {
+                var trimmedName = name.Trim();
+                if (trimmedName == StartAnimation1Parameter || trimmedName == StartAnimation2Parameter)
+                    continue;
+
                 args.Add(DynamicParameters.Get(name));
+            }
 
             return string.Format(Text, args.ToArray());
         }

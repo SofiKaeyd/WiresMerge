@@ -1055,6 +1055,9 @@ MonoBehaviour:
   _choicesGrid: {fileID: 4137429847618833117}
   _userChoices: []
   _pauseButton: {fileID: 7253972573592130227}
+  _mainBackground: {fileID: 3022430504364889829}
+  _dialogueBackground: {fileID: 1165163661264837037}
+  _homeOutsideBackground: {fileID: 21300000, guid: ecb612dcdbb60d8449722f5a8936ab04, type: 3}
 --- !u!61 &1929694232433061367
 BoxCollider2D:
   m_ObjectHideFlags: 0
