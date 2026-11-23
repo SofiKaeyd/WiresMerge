@@ -7,9 +7,11 @@ public class DialogChoiceButton : BaseButton
 
     public DialogNode Node { get; set; }
 
-    public void SetText(string text)
+    public void SetText(string text, bool leadsToLevel)
     {
-        _text.text = text;
+        _text.text = leadsToLevel
+            ? $"{text}  <color=#FFD166>→</color>"
+            : text;
         SetHighlighted(false);
     }
 

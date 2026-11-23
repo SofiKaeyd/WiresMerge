@@ -207,7 +207,9 @@ public class DialogWindow : BaseWindow, IClickable
             var button = Pool.Get<DialogChoiceButton>(_choicesGrid.transform);
             button.Node = node;
             button.OnButtonClick += OnButtonClick;
-            button.SetText(node.FormattedText);
+            button.SetText(
+                node.FormattedText,
+                LevelManager.IsNextExist && _dialogSystem.IsTerminalChoice(node));
             _userChoices.Add(button);
             MouseManager.AddClickable(button);
         }

@@ -13,6 +13,11 @@ public class DialogSystem
 
     public Action OnNextStep { get; set; }
 
+    public bool IsTerminalChoice(DialogNode node)
+    {
+        return node != null && node.IsPlayer && Config.GetChildren(node).Count == 0;
+    }
+
     protected DialogGraph Config
     {
         get
@@ -35,7 +40,7 @@ public class DialogSystem
             return false;
 
         var children = Config.GetChildren(node);
-        if ((node.IsPlayer && children.Count == 0))
+        if (IsTerminalChoice(node))
             return false;
 
         Debug.Log(node.Id);
