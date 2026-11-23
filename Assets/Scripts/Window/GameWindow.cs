@@ -8,9 +8,11 @@ public class GameWindow : BaseWindow
 {
     [SerializeField] private BaseButton _pauseButton;
     [SerializeField] private Text _timerValue;
+    [SerializeField] private Text _levelLabel;
 
     public override async UniTask OnOpen()
     {
+        _levelLabel.text = LevelManager.CurrentLevelLabel;
         Gameplay.Started += OnStarted;
         Gameplay.Finished += OnFinished;
         Gameplay.WireSystem.Win += OnWIn;
