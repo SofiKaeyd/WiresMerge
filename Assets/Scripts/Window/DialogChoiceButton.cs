@@ -7,10 +7,19 @@ public class DialogChoiceButton : BaseButton
     [SerializeField] private TextMeshProUGUI _text;
     [SerializeField] private Image _backgroundImage;
 
+    private TMP_SpriteAsset _defaultSpriteAsset;
+
     public DialogNode Node { get; set; }
 
-    public void SetText(string text, bool leadsToLevel)
+    private void Awake()
     {
+        _defaultSpriteAsset = _text.spriteAsset;
+    }
+
+    public void SetText(string text, bool leadsToLevel, TMP_SpriteAsset inlineImageAsset = null)
+    {
+        _text.spriteAsset = inlineImageAsset != null ? inlineImageAsset : _defaultSpriteAsset;
+
         _text.text = leadsToLevel
             ? $"{text}  <color=blue> ></color>"
             : text;
@@ -26,5 +35,17 @@ public class DialogChoiceButton : BaseButton
     public override void OnClick()
     {
         base.OnClick();
+    }
+
+    public override void Dispose()
+    {
+        base.Dispose();
+        if (_text != null)
+            _text.spriteAsset = _defaultSpriteAsset;
+    }
+
+    private void OnDestroy()
+    {
+        Dispose();
     }
 }

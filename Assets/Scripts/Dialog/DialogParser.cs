@@ -1,10 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using UnityEngine;
 
 public static class DialogParser
 {
+    private const int SourceImageUrlColumn = 10;
+    private const int RecipientImageUrlColumn = 11;
+
     private static string _spreadsheetID = "1G3RQ7Gtm1bGPiPyPeBCRwmT7uhxZ3l-tA7Hv2y84YHM";
     private static string _gid = "0";
     //private string DownloadUrl => $"https://docs.google.com/spreadsheets/d/{_spreadsheetID}/export?format=csv&gid={_gid}";
@@ -66,8 +69,23 @@ public static class DialogParser
                 var parameters = fields[7];
                 var conditions = fields[8];
                 var isCorrect = bool.Parse(fields[9]);
+                var sourceImageUrl = fields.Length > SourceImageUrlColumn
+                    ? fields[SourceImageUrlColumn].Trim()
+                    : "";
+                var recipientImageUrl = fields.Length > RecipientImageUrlColumn
+                    ? fields[RecipientImageUrlColumn].Trim()
+                    : "";
 
-                var newNode = new DialogNode(nodeId, speaker, text, isPlayer, parameters, conditions, isCorrect);
+                var newNode = new DialogNode(
+                    nodeId,
+                    speaker,
+                    text,
+                    isPlayer,
+                    parameters,
+                    conditions,
+                    isCorrect,
+                    sourceImageUrl,
+                    recipientImageUrl);
                 DialogGraph.Nodes.Add(newNode);
                 if (speaker == "Question")
                     DialogGraph.QuestionsCount++;

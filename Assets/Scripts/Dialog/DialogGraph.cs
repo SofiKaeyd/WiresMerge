@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "DialogGraph", menuName = "Dialog System/Dialog Graph")]
@@ -59,6 +60,9 @@ public class DialogGraph : ScriptableObject
 [Serializable]
 public class DialogNode
 {
+    public const string SourceImageSpriteName = "SourceImage";
+    public const string RecipientImageSpriteName = "RecipientImage";
+
     public int Id;
     public string Speaker;
     public string Text;
@@ -66,20 +70,51 @@ public class DialogNode
     public string Parameters;
     public string Conditions;
     public bool IsCorrect;
+    public string SourceImageUrl;
+    public string RecipientImageUrl;
+    public TMP_SpriteAsset InlineImageAsset;
 
     public List<int> ParentIds = new List<int>();
     public List<int> ChildrenIds = new List<int>();
+
+    public bool HasInlineImages =>
+        !string.IsNullOrWhiteSpace(SourceImageUrl) || !string.IsNullOrWhiteSpace(RecipientImageUrl);
 
     public string FormattedText
     {
         get
         {
-            var paramNames = Parameters.Split(',', StringSplitOptions.RemoveEmptyEntries);
             var args = new List<object>();
+
+            if (HasInlineImages)
+            {
+                args.Add(string.IsNullOrWhiteSpace(SourceImageUrl)
+                    ? ""
+                    : $"<sprite name=\"{SourceImageSpriteName}\">");
+                args.Add(string.IsNullOrWhiteSpace(RecipientImageUrl)
+                    ? ""
+                    : $"<sprite name=\"{RecipientImageSpriteName}\">");
+            }
+
+            var paramNames = Parameters.Split(',', StringSplitOptions.RemoveEmptyEntries);
             foreach (var name in paramNames)
                 args.Add(DynamicParameters.Get(name));
 
             return string.Format(Text, args.ToArray());
+        }
+    }
+
+    public string FormattedTextWithImageFallback
+    {
+        get
+        {
+            var text = FormattedText;
+            if (!string.IsNullOrWhiteSpace(SourceImageUrl))
+                text = text.Replace($"<sprite name=\"{SourceImageSpriteName}\">", "[Источник недоступен]");
+            if (!string.IsNullOrWhiteSpace(RecipientImageUrl))
+                text = text.Replace($"<sprite name=\"{RecipientImageSpriteName}\">", "[Получатель недоступен]");
+
+            return text;
         }
     }
 
@@ -96,7 +131,16 @@ public class DialogNode
         }
     }
 
-    public DialogNode(int nodeId, string speaker, string text, bool isPlayer, string parameters, string conditions, bool isCorrect)
+    public DialogNode(
+        int nodeId,
+        string speaker,
+        string text,
+        bool isPlayer,
+        string parameters,
+        string conditions,
+        bool isCorrect,
+        string sourceImageUrl = null,
+        string recipientImageUrl = null)
     {
         Id = nodeId;
         Speaker = speaker;
@@ -105,6 +149,8 @@ public class DialogNode
         Parameters = parameters;
         Conditions = conditions;
         IsCorrect = isCorrect;
+        SourceImageUrl = sourceImageUrl;
+        RecipientImageUrl = recipientImageUrl;
     }
 }
 

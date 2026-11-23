@@ -1,4 +1,4 @@
-﻿using Cysharp.Threading.Tasks;
+using Cysharp.Threading.Tasks;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -11,8 +11,6 @@ public class DialogWindow : BaseWindow, IClickable
     [SerializeField] private Collider2D _collider;
     [SerializeField] private TextMeshProUGUI _persText;
     [SerializeField] private TextMeshProUGUI _nameText;
-    [SerializeField] private Image _sourceImage;
-    [SerializeField] private Image _recipientImage;
     [SerializeField] private GridLayoutGroup _choicesGrid;
     [SerializeField] private List<DialogChoiceButton> _userChoices = new List<DialogChoiceButton>();
     [SerializeField] private BaseButton _pauseButton;
@@ -22,8 +20,15 @@ public class DialogWindow : BaseWindow, IClickable
     private bool _isTyping = false;
     private CancellationTokenSource _cancellationTokenSource;
     private string _textToType = "";
+    private TMP_SpriteAsset _defaultPersSpriteAsset;
+    private bool _isOpen;
 
     public Collider2D Collider => _collider;
+
+    private void Awake()
+    {
+        _defaultPersSpriteAsset = _persText.spriteAsset;
+    }
 
     public void Start()
     {
@@ -33,6 +38,7 @@ public class DialogWindow : BaseWindow, IClickable
     public override async UniTask OnOpen()
     {
         Debug.Log("On Open Dialog");
+        _isOpen = true;
         await base.OnOpen();
 
         _dialogSystem = Gameplay.DialogSystem;
@@ -116,38 +122,24 @@ public class DialogWindow : BaseWindow, IClickable
 
     private void UpdateUI()
     {
-        foreach (var choice in _userChoices)
+        ReleaseUserChoices();
+
+        var currentNode = _dialogSystem.CurrentRootNode;
+        _persText.spriteAsset = currentNode.InlineImageAsset != null
+            ? currentNode.InlineImageAsset
+            : _defaultPersSpriteAsset;
+        _persText.text = "";
+
+        if (!currentNode.IsPlayer)
         {
-            if (choice != null)
-            {
-                choice.OnButtonClick -= OnButtonClick;
-                MouseManager.RemoveClickable(choice);
-                Pool.Release(choice);
-            }
-        }
-
-        _userChoices.Clear();
-
-        UpdateImages(_dialogSystem.CurrentRootNode);
-
-        if (!_dialogSystem.CurrentRootNode.IsPlayer)
-        {
-            _nameText.text = _dialogSystem.CurrentRootNode.Speaker;
-            _textToType = _dialogSystem.CurrentRootNode.FormattedText ?? "";
+            _nameText.text = currentNode.Speaker;
+            _textToType = GetFormattedText(currentNode);
             StartAnimation();
         }
         else
         {
             ShowUserChoices();
         }
-    }
-
-    private void UpdateImages(DialogNode node)
-    {
-        _sourceImage.sprite = node.SourceImage;
-        _sourceImage.gameObject.SetActive(node.SourceImage != null);
-        _recipientImage.sprite = node.RecipientImage;
-        _recipientImage.gameObject.SetActive(node.RecipientImage != null);
     }
 
     private async UniTask TypeText(string textToType, CancellationToken token)
@@ -166,10 +158,23 @@ public class DialogWindow : BaseWindow, IClickable
                 return;
             }
 
-            foreach (char letter in textToType)
+            for (var index = 0; index < textToType.Length;)
             {
                 token.ThrowIfCancellationRequested();
-                _persText.text += letter;
+
+                if (textToType[index] == '<')
+                {
+                    var tagEnd = textToType.IndexOf('>', index);
+                    if (tagEnd >= 0)
+                    {
+                        _persText.text += textToType.Substring(index, tagEnd - index + 1);
+                        index = tagEnd + 1;
+                        continue;
+                    }
+                }
+
+                _persText.text += textToType[index];
+                index++;
                 await UniTask.Delay((int)(_delay * 700));
             }
 
@@ -189,7 +194,8 @@ public class DialogWindow : BaseWindow, IClickable
     private void OnAnimationComplete()
     {
         _isTyping = false;
-        ShowUserChoices();
+        if (_isOpen)
+            ShowUserChoices();
     }
 
     private void OnAnimationInterrupted()
@@ -201,12 +207,13 @@ public class DialogWindow : BaseWindow, IClickable
             _persText.text = _textToType;
         }
 
-        ShowUserChoices();
+        if (_isOpen)
+            ShowUserChoices();
     }
 
     private void ShowUserChoices()
     {
-        if (_dialogSystem?.NextDialogNodes == null)
+        if (!_isOpen || _dialogSystem?.NextDialogNodes == null)
             return;
 
         _choicesGrid.gameObject.SetActive(true);
@@ -217,14 +224,42 @@ public class DialogWindow : BaseWindow, IClickable
                 continue;
 
             var button = Pool.Get<DialogChoiceButton>(_choicesGrid.transform);
+            _userChoices.Add(button);
             button.Node = node;
             button.OnButtonClick += OnButtonClick;
             button.SetText(
-                node.FormattedText,
-                LevelManager.IsNextExist && _dialogSystem.IsTerminalChoice(node));
-            _userChoices.Add(button);
+                GetFormattedText(node),
+                LevelManager.IsNextExist && _dialogSystem.IsTerminalChoice(node),
+                node.InlineImageAsset);
             MouseManager.AddClickable(button);
         }
+    }
+
+    private string GetFormattedText(DialogNode node)
+    {
+        if (node.HasInlineImages && node.InlineImageAsset == null)
+        {
+            Debug.LogError(
+                $"Dialog node {node.Id} has image URLs but no local image asset. Re-import the graph from Google Sheets.");
+            return node.FormattedTextWithImageFallback;
+        }
+
+        return node.FormattedText;
+    }
+
+    private void ReleaseUserChoices()
+    {
+        foreach (var choice in _userChoices)
+        {
+            if (choice == null)
+                continue;
+
+            choice.OnButtonClick -= OnButtonClick;
+            MouseManager.RemoveClickable(choice);
+            Pool.Release(choice);
+        }
+
+        _userChoices.Clear();
     }
 
     private void StartAnimation()
@@ -242,22 +277,16 @@ public class DialogWindow : BaseWindow, IClickable
 
     public override UniTask OnClose()
     {
+        _isOpen = false;
         StopAnimation();
 
         _dialogSystem.OnNextStep -= UpdateUI;
         _pauseButton.OnButtonClick -= OnPauseClick;
         MouseManager.RemoveClickable(_pauseButton);
 
-        foreach (var choice in _userChoices)
-        {
-            if (choice != null)
-            {
-                choice.OnButtonClick -= OnButtonClick;
-                MouseManager.RemoveClickable(choice);
-                Pool.Release(choice);
-            }
-        }
-        _userChoices.Clear();
+        ReleaseUserChoices();
+        _persText.spriteAsset = _defaultPersSpriteAsset;
+        _persText.text = "";
 
         return base.OnClose();
     }
