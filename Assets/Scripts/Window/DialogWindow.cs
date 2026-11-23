@@ -67,6 +67,20 @@ public class DialogWindow : BaseWindow, IClickable
     {
         if (Input.GetKeyDown(KeyCode.Space))
             OnClick();
+
+        UpdateChoiceHighlight();
+    }
+
+    private void UpdateChoiceHighlight()
+    {
+        if (_userChoices.Count == 0)
+            return;
+
+        var mousePosition = CameraManager.MainCamera.ScreenToWorldPoint(Input.mousePosition);
+        var hit = Physics2D.Raycast(mousePosition, Vector2.zero);
+
+        foreach (var choice in _userChoices)
+            choice.SetHighlighted(choice.Collider == hit.collider);
     }
 
     public void OnClick()
