@@ -196,7 +196,7 @@ public class LevelsConfigWindow : EditorWindow
         EditorGUILayout.LabelField($"Level Configuration - ID: {selectedLevel.LevelId}", EditorStyles.boldLabel);
 
         // Level ID
-        selectedLevel.LevelId = EditorGUILayout.IntField("Level ID", selectedLevel.LevelId);
+        selectedLevel.LevelId = EditorGUILayout.TextField("Level ID", selectedLevel.LevelId);
 
         // Dialog Node ID
         selectedLevel.DialogNodeId = EditorGUILayout.IntField("Dialog Node ID", selectedLevel.DialogNodeId);
@@ -451,7 +451,7 @@ public class LevelsConfigWindow : EditorWindow
     {
         var newLevel = new LevelConfig
         {
-            LevelId = _levelsConfig.Levels.Count > 0 ? _levelsConfig.Levels.Max(l => l.LevelId) + 1 : 1,
+            LevelId = GetNextLevelId(),
             DialogNodeId = 0,
             TimerDuration = 300f,
             WireCells = new List<WireCellData>()
@@ -460,6 +460,38 @@ public class LevelsConfigWindow : EditorWindow
         _levelsConfig.Levels.Add(newLevel);
         _selectedLevelIndex = _levelsConfig.Levels.Count - 1;
         _wireCellFoldouts = new bool[0];
+    }
+
+    private string GetNextLevelId()
+    {
+        var lastWorkLevel = GetLastLevelNumber("1");
+        if (lastWorkLevel > 0)
+            return $"1_{lastWorkLevel + 1}";
+
+        var lastTrainingLevel = GetLastLevelNumber("0");
+        return lastTrainingLevel < 4
+            ? $"0_{lastTrainingLevel + 1}"
+            : "1_1";
+    }
+
+    private int GetLastLevelNumber(string group)
+    {
+        var lastLevelNumber = 0;
+        foreach (var level in _levelsConfig.Levels)
+        {
+            var parts = level.LevelId?.Split('_');
+            if (parts == null ||
+                parts.Length != 2 ||
+                parts[0] != group ||
+                !int.TryParse(parts[1], out var levelNumber))
+            {
+                continue;
+            }
+
+            lastLevelNumber = Mathf.Max(lastLevelNumber, levelNumber);
+        }
+
+        return lastLevelNumber;
     }
 
     private void RemoveLevel(int index)

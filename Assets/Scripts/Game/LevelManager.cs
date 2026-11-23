@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using System.Linq;
+using UnityEngine;
 
 public static class LevelManager
 {
@@ -43,6 +45,36 @@ public static class LevelManager
     }
 
     public static float LastTimerDuration { get; private set; }
+
+    public static string CurrentLevelLabel
+    {
+        get
+        {
+            if (_currentConfig == null)
+                throw new InvalidOperationException("A level must be loaded before its label can be displayed.");
+
+            var separator = _currentConfig.LevelId?.IndexOf('_') ?? -1;
+            if (separator <= 0 ||
+                !int.TryParse(_currentConfig.LevelId.Substring(separator + 1), out var levelNumber))
+            {
+                throw new InvalidOperationException(
+                    $"Level ID '{_currentConfig.LevelId}' must use the '<group>_<number>' format.");
+            }
+
+            var group = _currentConfig.LevelId.Substring(0, separator);
+            if (group != "0" && group != "1")
+                throw new InvalidOperationException($"Unknown level group '{group}' in ID '{_currentConfig.LevelId}'.");
+
+            var groupCount = Config.Levels.Count(level =>
+                level.LevelId.StartsWith(group + "_", StringComparison.Ordinal));
+            if (groupCount == 0 || levelNumber < 1)
+                throw new InvalidOperationException($"Invalid level number in ID '{_currentConfig.LevelId}'.");
+
+            return group == "0"
+                ? $"Обучающая схема {levelNumber}/{groupCount}"
+                : $"Рабочая схема {levelNumber}/{groupCount}";
+        }
+    }
 
     public static void LoadLevel(int id)
     {

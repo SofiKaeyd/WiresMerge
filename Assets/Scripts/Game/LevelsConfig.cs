@@ -16,7 +16,7 @@ public class LevelsConfig : ScriptableObject
 [Serializable]
 public class LevelConfig
 {
-    public int LevelId;
+    public string LevelId;
     public int DialogNodeId;
     public float TimerDuration = 600f;
 
