@@ -1,16 +1,18 @@
 ﻿using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class DialogChoiceButton : BaseButton
 {
     [SerializeField] private TextMeshProUGUI _text;
+    [SerializeField] private Image _backgroundImage;
 
     public DialogNode Node { get; set; }
 
     public void SetText(string text, bool leadsToLevel)
     {
         _text.text = leadsToLevel
-            ? $"{text}  <color=#FFD166>→</color>"
+            ? $"{text}  <color=blue> ></color>"
             : text;
         SetHighlighted(false);
     }

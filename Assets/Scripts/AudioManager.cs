@@ -32,13 +32,25 @@ public class AudioManager : MonoBehaviour
 
     private void Awake()
     {
+        if (_instance != null && _instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         _instance = this;
-        DontDestroyOnLoad(this);
+        DontDestroyOnLoad(gameObject);
 
         _soundSource.volume = SoundVolumeValue;
         _musicSource.volume = MusicVolumeValue;
 
         Play(Sound.Main, true);
+    }
+
+    private void OnDestroy()
+    {
+        if (_instance == this)
+            _instance = null;
     }
 
     public static float GetClipLength(Sound sound)

@@ -11,6 +11,8 @@ public class DialogWindow : BaseWindow, IClickable
     [SerializeField] private Collider2D _collider;
     [SerializeField] private TextMeshProUGUI _persText;
     [SerializeField] private TextMeshProUGUI _nameText;
+    [SerializeField] private Image _sourceImage;
+    [SerializeField] private Image _recipientImage;
     [SerializeField] private GridLayoutGroup _choicesGrid;
     [SerializeField] private List<DialogChoiceButton> _userChoices = new List<DialogChoiceButton>();
     [SerializeField] private BaseButton _pauseButton;
@@ -126,6 +128,8 @@ public class DialogWindow : BaseWindow, IClickable
 
         _userChoices.Clear();
 
+        UpdateImages(_dialogSystem.CurrentRootNode);
+
         if (!_dialogSystem.CurrentRootNode.IsPlayer)
         {
             _nameText.text = _dialogSystem.CurrentRootNode.Speaker;
@@ -136,6 +140,14 @@ public class DialogWindow : BaseWindow, IClickable
         {
             ShowUserChoices();
         }
+    }
+
+    private void UpdateImages(DialogNode node)
+    {
+        _sourceImage.sprite = node.SourceImage;
+        _sourceImage.gameObject.SetActive(node.SourceImage != null);
+        _recipientImage.sprite = node.RecipientImage;
+        _recipientImage.gameObject.SetActive(node.RecipientImage != null);
     }
 
     private async UniTask TypeText(string textToType, CancellationToken token)
