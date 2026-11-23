@@ -86,6 +86,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3993596195678286845}
   - component: {fileID: 977331760510047060}
+  - component: {fileID: 7440308711022600001}
   - component: {fileID: 6288463960307193469}
   - component: {fileID: 3505554301093499270}
   m_Layer: 5
@@ -130,8 +131,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _isPopup: 1
+  _canvasGroup: {fileID: 7440308711022600001}
   _nextButton: {fileID: 2449059630805464091}
   _exitButton: {fileID: 6067951215832440714}
+--- !u!225 &7440308711022600001
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2484699763952001184}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!61 &6288463960307193469
 BoxCollider2D:
   m_ObjectHideFlags: 0
