@@ -46,6 +46,11 @@ public static class LevelManager
 
     public static float LastTimerDuration { get; private set; }
 
+    public static bool IsTrainingLevel =>
+        _currentConfig != null &&
+        _currentConfig.LevelId != null &&
+        _currentConfig.LevelId.StartsWith("0_", StringComparison.Ordinal);
+
     public static string CurrentLevelLabel
     {
         get
@@ -90,6 +95,22 @@ public static class LevelManager
             // GameObject finish dialog
             LastDialogNodeId = 127;
         }
+    }
+
+    public static bool SkipTraining()
+    {
+        for (var index = 0; index < Config.Levels.Count; index++)
+        {
+            var levelId = Config.Levels[index].LevelId;
+            if (levelId != null &&
+                !levelId.StartsWith("0_", StringComparison.Ordinal))
+            {
+                LoadLevel(index);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static void UnloadLevel()
