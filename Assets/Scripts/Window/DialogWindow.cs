@@ -14,6 +14,7 @@ public class DialogWindow : BaseWindow, IClickable
     [SerializeField] private GridLayoutGroup _choicesGrid;
     [SerializeField] private List<DialogChoiceButton> _userChoices = new List<DialogChoiceButton>();
     [SerializeField] private BaseButton _pauseButton;
+    [SerializeField] private BaseButton _skipTrainingButton;
     [SerializeField] private Image _mainBackground;
     [SerializeField] private Image _dialogueBackground;
     [SerializeField] private Sprite _homeOutsideBackground;
@@ -25,6 +26,7 @@ public class DialogWindow : BaseWindow, IClickable
     private CancellationTokenSource _cancellationTokenSource;
     private CancellationTokenSource _storyAnimationCancellation;
     private string _textToType = "";
+    private bool _skipTrainingRegistered;
     private TMP_SpriteAsset _defaultPersSpriteAsset;
     private Sprite _defaultBackgroundSprite;
     private Color _defaultMainBackgroundColor;
@@ -70,11 +72,32 @@ public class DialogWindow : BaseWindow, IClickable
 
         _pauseButton.OnButtonClick += OnPauseClick;
         MouseManager.AddClickable(_pauseButton);
+
+        _skipTrainingButton.gameObject.SetActive(LevelManager.IsTrainingLevel);
+        if (LevelManager.IsTrainingLevel)
+        {
+            _skipTrainingButton.OnButtonClick += OnSkipTrainingClick;
+            MouseManager.AddClickable(_skipTrainingButton);
+            _skipTrainingRegistered = true;
+        }
     }
 
     private void OnPauseClick(BaseButton button)
     {
         WindowManager.Open<PausePopup>();
+    }
+
+    private void OnSkipTrainingClick(BaseButton button)
+    {
+        StopAnimation();
+        if (!LevelManager.SkipTraining())
+        {
+            Debug.LogError("Cannot skip training: working level 1_1 was not found.");
+            return;
+        }
+
+        WindowManager.Open<GameWindow>();
+        LevelManager.ShowLevel();
     }
 
     private void OnButtonClick(BaseButton button)
@@ -529,6 +552,12 @@ public class DialogWindow : BaseWindow, IClickable
         _dialogSystem.OnNextStep -= UpdateUI;
         _pauseButton.OnButtonClick -= OnPauseClick;
         MouseManager.RemoveClickable(_pauseButton);
+        if (_skipTrainingRegistered)
+        {
+            _skipTrainingButton.OnButtonClick -= OnSkipTrainingClick;
+            MouseManager.RemoveClickable(_skipTrainingButton);
+            _skipTrainingRegistered = false;
+        }
 
         ReleaseUserChoices();
         _persText.spriteAsset = _defaultPersSpriteAsset;

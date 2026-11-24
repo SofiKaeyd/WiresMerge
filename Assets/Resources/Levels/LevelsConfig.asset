@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: LevelsConfig
   m_EditorClassIdentifier: 
   Levels:
-  - LevelId: 1
+  - LevelId: "0_1"
     DialogNodeId: 0
     TimerDuration: 600
     WireCells:
@@ -73,7 +73,7 @@ MonoBehaviour:
       OutputAngles: 0e01000000000000
       CurveIntensity: 0.4
       QuizNodeId: -1
-  - LevelId: 2
+  - LevelId: "0_2"
     DialogNodeId: 20
     TimerDuration: 600
     WireCells:
@@ -126,7 +126,7 @@ MonoBehaviour:
       OutputAngles: 4a0100001e000000
       CurveIntensity: 0.4
       QuizNodeId: -1
-  - LevelId: 3
+  - LevelId: "0_3"
     DialogNodeId: 29
     TimerDuration: 600
     WireCells:
@@ -256,7 +256,7 @@ MonoBehaviour:
       OutputAngles: b40000000e010000
       CurveIntensity: 0.4
       QuizNodeId: -1
-  - LevelId: 4
+  - LevelId: "0_4"
     DialogNodeId: 35
     TimerDuration: 600
     WireCells:
@@ -435,7 +435,7 @@ MonoBehaviour:
       OutputAngles: 1e0000005a000000
       CurveIntensity: 0.4
       QuizNodeId: -1
-  - LevelId: 5
+  - LevelId: "1_1"
     DialogNodeId: 46
     TimerDuration: 600
     WireCells:
@@ -565,7 +565,7 @@ MonoBehaviour:
       OutputAngles: 00000000b4000000
       CurveIntensity: 0.4
       QuizNodeId: -1
-  - LevelId: 6
+  - LevelId: "1_2"
     DialogNodeId: 82
     TimerDuration: 300
     WireCells:
@@ -674,7 +674,7 @@ MonoBehaviour:
       OutputAngles: 0e0100001e000000
       CurveIntensity: 0.4
       QuizNodeId: 223
-  - LevelId: 7
+  - LevelId: "1_3"
     DialogNodeId: 102
     TimerDuration: 300
     WireCells:
@@ -825,7 +825,7 @@ MonoBehaviour:
       OutputAngles: 000000005a000000
       CurveIntensity: 0.4
       QuizNodeId: -1
-  - LevelId: 8
+  - LevelId: "1_4"
     DialogNodeId: 115
     TimerDuration: 240
     WireCells:
@@ -955,7 +955,7 @@ MonoBehaviour:
       OutputAngles: 1e0000005a000000
       CurveIntensity: 0.4
       QuizNodeId: 288
-  - LevelId: 9
+  - LevelId: "1_5"
     DialogNodeId: 120
     TimerDuration: 240
     WireCells:

@@ -12,13 +12,16 @@ public class QuizPopup : BaseWindow
     [SerializeField] private List<QuizAnswerButton> _userAnswers = new List<QuizAnswerButton>();
     [SerializeField] private BaseButton _closeButton;
     [SerializeField] private Image _closeButtonImage;
+    [SerializeField] private Text _answerStats;
 
     public override async UniTask OnOpen()
     {
         Gameplay.TimerSystem.IsRunning = false;
         _closeButton.gameObject.SetActive(false);
+        Gameplay.AnswerStatisticsChanged += UpdateAnswerStatistics;
 
         UpdateUI();
+        UpdateAnswerStatistics();
 
         foreach (var answer in _userAnswers)
         {
@@ -68,10 +71,7 @@ public class QuizPopup : BaseWindow
         var quizSystem = Gameplay.QuizSystem;
         var isCorrect = quizSystem.NextStep(quizButton.Node);
 
-        if (isCorrect)
-        {
-            Gameplay.CorrectAnswers++;
-        }
+        Gameplay.RecordAnswer(isCorrect);
 
         quizButton.AnimateBackgroundColor(new Color32(0x71, 0x52, 0x3E, 160));
 
@@ -94,10 +94,17 @@ public class QuizPopup : BaseWindow
         WindowManager.ClosePopup();
     }
 
+    private void UpdateAnswerStatistics()
+    {
+        _answerStats.text =
+            $"Статистика ответов: <color=#00FF00>{Gameplay.CorrectAnswers}</color> <color=#FF0000>{Gameplay.WrongAnswers}</color>";
+    }
+
     public override async UniTask OnClose()
     {
         _closeButton.OnButtonClick -= OnCloseButton;
         MouseManager.RemoveClickable(_closeButton);
+        Gameplay.AnswerStatisticsChanged -= UpdateAnswerStatistics;
 
         foreach (var answer in _userAnswers)
         {

@@ -25,6 +25,8 @@ public class GameWindow : BaseWindow
 
     [SerializeField] private BaseButton _pauseButton;
     [SerializeField] private Text _timerValue;
+    [SerializeField] private Text _levelLabel;
+    [SerializeField] private Text _answerStats;
 
     private bool _winStarted;
 
@@ -32,8 +34,11 @@ public class GameWindow : BaseWindow
     {
         _winStarted = false;
         _pauseButton.gameObject.SetActive(true);
+        _levelLabel.text = LevelManager.CurrentLevelLabel;
+        UpdateAnswerStatistics();
         Gameplay.Started += OnStarted;
         Gameplay.Finished += OnFinished;
+        Gameplay.AnswerStatisticsChanged += UpdateAnswerStatistics;
         Gameplay.WireSystem.Win += OnWIn;
         _pauseButton.OnButtonClick += OnPauseClick;
         MouseManager.AddClickable(_pauseButton);
@@ -165,6 +170,7 @@ public class GameWindow : BaseWindow
     {
         Debug.Log("on started game window");
         _timerValue.text = LevelManager.LastTimerDuration.ToString();
+        UpdateAnswerStatistics();
         Gameplay.TimerSystem.IntervalElapsed += OnIntervalElapsed;
         Gameplay.TimerSystem.TimerElapsed += OnTimerElapsed;
     }
@@ -185,12 +191,19 @@ public class GameWindow : BaseWindow
         WindowManager.Open<LosePopup>();
     }
 
+    private void UpdateAnswerStatistics()
+    {
+        _answerStats.text =
+            $"Статистика ответов: <color=#00FF00>{Gameplay.CorrectAnswers}</color> <color=#FF0000>{Gameplay.WrongAnswers}</color>";
+    }
+
     public override async UniTask OnClose()
     {
         _pauseButton.OnButtonClick -= OnPauseClick;
         MouseManager.RemoveClickable(_pauseButton);
 
         Gameplay.Finished -= OnFinished;
+        Gameplay.AnswerStatisticsChanged -= UpdateAnswerStatistics;
         Gameplay.WireSystem.Win -= OnWIn;
         Gameplay.Finish();
     }

@@ -4,11 +4,13 @@ using UnityEngine;
 public class Gameplay : MonoBehaviour
 {
     private static Gameplay _instance;
+    private static int _levelCorrectAnswers;
     public static readonly string DefaultUserName = "Лев";
     private static string _userName;
 
     public static Action Started;
     public static Action Finished;
+    public static Action AnswerStatisticsChanged;
 
     public static Transform Transform => _instance.transform;
 
@@ -36,7 +38,8 @@ public class Gameplay : MonoBehaviour
         }
     }
 
-    public static int CorrectAnswers { get; set; }
+    public static int CorrectAnswers { get; private set; }
+    public static int WrongAnswers { get; private set; }
 
     public static int Score
     {
@@ -74,6 +77,8 @@ public class Gameplay : MonoBehaviour
 
     public static void Play()
     {
+        _levelCorrectAnswers = 0;
+
         TimerSystem = new TimerSystem();
 
         _instance.gameObject.SetActive(true);
@@ -85,7 +90,7 @@ public class Gameplay : MonoBehaviour
 
     public static void Finish()
     {
-        CorrectAnswers = 0;
+        _levelCorrectAnswers = 0;
         WireSystem.Reset();
 
         TimerSystem.IntervalElapsed = null;
@@ -97,9 +102,30 @@ public class Gameplay : MonoBehaviour
         Finished?.Invoke();
     }
 
+    public static void RecordAnswer(bool isCorrect)
+    {
+        if (isCorrect)
+        {
+            CorrectAnswers++;
+            _levelCorrectAnswers++;
+        }
+        else
+            WrongAnswers++;
+
+        AnswerStatisticsChanged?.Invoke();
+    }
+
+    public static void ResetAnswerStatistics()
+    {
+        CorrectAnswers = 0;
+        WrongAnswers = 0;
+        _levelCorrectAnswers = 0;
+        AnswerStatisticsChanged?.Invoke();
+    }
+
     public static void Win()
     {
-        Score += CorrectAnswers;
-        CorrectAnswers = 0;
+        Score += _levelCorrectAnswers;
+        _levelCorrectAnswers = 0;
     }
 }
