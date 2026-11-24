@@ -38,8 +38,17 @@ public class Gameplay : MonoBehaviour
         }
     }
 
-    public static int CorrectAnswers { get; private set; }
-    public static int WrongAnswers { get; private set; }
+    public static int CorrectAnswers
+    {
+        get => PlayerPrefs.GetInt("CorrectAnswers", 0);
+        private set => PlayerPrefs.SetInt("CorrectAnswers", value);
+    }
+
+    public static int WrongAnswers
+    {
+        get => PlayerPrefs.GetInt("WrongAnswers", 0);
+        private set => PlayerPrefs.SetInt("WrongAnswers", value);
+    }
 
     public static int Score
     {
@@ -112,14 +121,7 @@ public class Gameplay : MonoBehaviour
         else
             WrongAnswers++;
 
-        AnswerStatisticsChanged?.Invoke();
-    }
-
-    public static void ResetAnswerStatistics()
-    {
-        CorrectAnswers = 0;
-        WrongAnswers = 0;
-        _levelCorrectAnswers = 0;
+        PlayerPrefs.Save();
         AnswerStatisticsChanged?.Invoke();
     }
 
