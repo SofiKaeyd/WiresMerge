@@ -188,6 +188,7 @@ public class GameWindow : BaseWindow
     private void OnTimerElapsed()
     {
         Debug.Log("LOSE");
+        Gameplay.RecordLoss();
         WindowManager.Open<LosePopup>();
     }
 

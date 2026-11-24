@@ -50,6 +50,24 @@ public class Gameplay : MonoBehaviour
         private set => PlayerPrefs.SetInt("WrongAnswers", value);
     }
 
+    public static int RunCorrectAnswers
+    {
+        get => PlayerPrefs.GetInt("RunCorrectAnswers", 0);
+        private set => PlayerPrefs.SetInt("RunCorrectAnswers", value);
+    }
+
+    public static int RunWrongAnswers
+    {
+        get => PlayerPrefs.GetInt("RunWrongAnswers", 0);
+        private set => PlayerPrefs.SetInt("RunWrongAnswers", value);
+    }
+
+    public static int RunLosses
+    {
+        get => PlayerPrefs.GetInt("RunLosses", 0);
+        private set => PlayerPrefs.SetInt("RunLosses", value);
+    }
+
     public static int Score
     {
         get => PlayerPrefs.GetInt("Score", 0);
@@ -84,6 +102,14 @@ public class Gameplay : MonoBehaviour
     {
     }
 
+    public static void BeginRun()
+    {
+        RunCorrectAnswers = 0;
+        RunWrongAnswers = 0;
+        RunLosses = 0;
+        PlayerPrefs.Save();
+    }
+
     public static void Play()
     {
         _levelCorrectAnswers = 0;
@@ -116,13 +142,23 @@ public class Gameplay : MonoBehaviour
         if (isCorrect)
         {
             CorrectAnswers++;
+            RunCorrectAnswers++;
             _levelCorrectAnswers++;
         }
         else
+        {
             WrongAnswers++;
+            RunWrongAnswers++;
+        }
 
         PlayerPrefs.Save();
         AnswerStatisticsChanged?.Invoke();
+    }
+
+    public static void RecordLoss()
+    {
+        RunLosses++;
+        PlayerPrefs.Save();
     }
 
     public static void Win()
