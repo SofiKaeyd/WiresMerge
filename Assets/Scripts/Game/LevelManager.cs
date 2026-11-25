@@ -44,6 +44,18 @@ public static class LevelManager
         }
     }
 
+    private static string LevelBeginNodeKey => $"LevelBeginNodeId{LastId}";
+    private static string LevelBeginDarknessKey => $"LevelBeginDarkness{LastId}";
+    private static string LevelBeginLightKey => $"LevelBeginLight{LastId}";
+    private static string StoryDarknessKey => $"StoryDarkness{LastId}";
+    private static string StoryLightKey => $"StoryLight{LastId}";
+
+    public static bool HasLevelBegin => PlayerPrefs.GetInt(LevelBeginNodeKey, -1) >= 0;
+    public static int LevelBeginNodeId => PlayerPrefs.GetInt(LevelBeginNodeKey, -1);
+    public static bool LevelBeginHasDarkness => PlayerPrefs.GetInt(LevelBeginDarknessKey, 0) != 0;
+    public static bool LevelBeginHasLight => PlayerPrefs.GetInt(LevelBeginLightKey, 0) != 0;
+    public static bool ShouldRestoreLevelBeginVisuals { get; private set; }
+
     public static float LastTimerDuration { get; private set; }
 
     public static bool IsTrainingLevel =>
@@ -81,13 +93,22 @@ public static class LevelManager
         }
     }
 
-    public static void LoadLevel(int id)
+    public static void LoadLevel(int id, bool restartAtLevelBegin = false)
     {
+        ShouldRestoreLevelBeginVisuals = false;
+        var previousId = LastId;
         LastId = id;
         if (Config.Levels.Count > id)
         {
             _currentConfig = Config.Levels[id];
-            LastDialogNodeId = _currentConfig.DialogNodeId;
+            var hasRestartCheckpoint = restartAtLevelBegin && HasLevelBegin;
+            if (previousId != id || !hasRestartCheckpoint)
+                ClearDialogRestartState();
+
+            ShouldRestoreLevelBeginVisuals = hasRestartCheckpoint;
+            LastDialogNodeId = ShouldRestoreLevelBeginVisuals
+                ? LevelBeginNodeId
+                : _currentConfig.DialogNodeId;
             LastTimerDuration = _currentConfig.TimerDuration;
         }
         else
@@ -95,6 +116,54 @@ public static class LevelManager
             // GameObject finish dialog
             LastDialogNodeId = 127;
         }
+    }
+
+    public static void RecordDialogNode(DialogNode node)
+    {
+        if (node == null)
+            return;
+
+        if (node.HasParameter(DialogNode.LevelBeginParameter))
+        {
+            if (LevelBeginNodeId == node.Id)
+                return;
+
+            PlayerPrefs.SetInt(LevelBeginNodeKey, node.Id);
+            PlayerPrefs.SetInt(LevelBeginDarknessKey, PlayerPrefs.GetInt(StoryDarknessKey, 0));
+            PlayerPrefs.SetInt(LevelBeginLightKey, PlayerPrefs.GetInt(StoryLightKey, 0));
+            PlayerPrefs.Save();
+        }
+    }
+
+    public static void RecordStoryAnimation(string parameter)
+    {
+        if (parameter == DialogNode.StartAnimation1Parameter)
+        {
+            PlayerPrefs.SetInt(StoryLightKey, 1);
+        }
+        else if (parameter == DialogNode.StartAnimation2Parameter)
+        {
+            PlayerPrefs.SetInt(StoryDarknessKey, 1);
+            PlayerPrefs.SetInt(StoryLightKey, 0);
+        }
+
+        PlayerPrefs.Save();
+    }
+
+    public static bool ConsumeLevelBeginVisualRestore()
+    {
+        var shouldRestore = ShouldRestoreLevelBeginVisuals;
+        ShouldRestoreLevelBeginVisuals = false;
+        return shouldRestore;
+    }
+
+    private static void ClearDialogRestartState()
+    {
+        PlayerPrefs.DeleteKey(LevelBeginNodeKey);
+        PlayerPrefs.DeleteKey(LevelBeginDarknessKey);
+        PlayerPrefs.DeleteKey(LevelBeginLightKey);
+        PlayerPrefs.DeleteKey(StoryDarknessKey);
+        PlayerPrefs.DeleteKey(StoryLightKey);
     }
 
     public static bool SkipTraining()

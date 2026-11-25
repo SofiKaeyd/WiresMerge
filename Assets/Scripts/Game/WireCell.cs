@@ -204,17 +204,22 @@ public class WireCell : MonoBehaviour, IClickable, IWireCell, IDisposable
 
     public void OnClick()
     {
+        if (Gameplay.WireSystem.IsLocked)
+            return;
+
         RotateToLeft();
         if (_quizNodeId > -1)
         {
-            Gameplay.QuizSystem.Start(QuizNodeId);
-            WindowManager.Open<QuizPopup>();
+            Gameplay.RequestQuiz(QuizNodeId);
             _quizNodeId = -1;
         }
     }
 
     public void RotateToLeft()
     {
+        if (Gameplay.WireSystem.IsLocked)
+            return;
+
         AudioManager.PlayOneShot(Sound.WireClick);
 
         _rotateCount++;

@@ -21,7 +21,7 @@ public class MenuWindow : BaseWindow
     private async void OnPlayClick(BaseButton button)
     {
         await SceneHandler.LoadScene(SceneHandler.GameScene);
-        LevelManager.LoadLevel(LevelManager.LastId);
+        LevelManager.LoadLevel(LevelManager.LastId, LevelManager.HasLevelBegin);
         WindowManager.Open<DialogWindow>();
     }
 

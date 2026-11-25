@@ -5,12 +5,15 @@ public class Gameplay : MonoBehaviour
 {
     private static Gameplay _instance;
     private static int _levelCorrectAnswers;
+    private static int _pendingQuizCount;
     public static readonly string DefaultUserName = "Лев";
     private static string _userName;
 
     public static Action Started;
     public static Action Finished;
     public static Action AnswerStatisticsChanged;
+    public static Action<int> QuizRequested;
+    public static Action AllQuizzesResolved;
 
     public static Transform Transform => _instance.transform;
 
@@ -18,6 +21,7 @@ public class Gameplay : MonoBehaviour
     public static TimerSystem TimerSystem { get; private set; }
     public static DialogSystem DialogSystem { get; private set; }
     public static QuizSystem QuizSystem { get; private set; }
+    public static int PendingQuizCount => _pendingQuizCount;
 
     public static string UserName
     {
@@ -124,6 +128,7 @@ public class Gameplay : MonoBehaviour
     public static void Finish()
     {
         _levelCorrectAnswers = 0;
+        _pendingQuizCount = 0;
         WireSystem.Reset();
 
         TimerSystem.IntervalElapsed = null;
@@ -157,6 +162,31 @@ public class Gameplay : MonoBehaviour
     {
         RunLosses++;
         PlayerPrefs.Save();
+    }
+
+    public static void RequestQuiz(int nodeId)
+    {
+        _pendingQuizCount++;
+        QuizRequested?.Invoke(nodeId);
+    }
+
+    public static void ResolveQuiz()
+    {
+        if (_pendingQuizCount <= 0)
+        {
+            Debug.LogError("Cannot resolve a quiz when no quizzes are pending.");
+            return;
+        }
+
+        _pendingQuizCount--;
+        if (_pendingQuizCount == 0)
+            AllQuizzesResolved?.Invoke();
+    }
+
+    public static void StartQuiz(int nodeId)
+    {
+        QuizSystem = new QuizSystem();
+        QuizSystem.Start(nodeId);
     }
 
     public static void Win()

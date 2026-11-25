@@ -1,5 +1,6 @@
 using Cysharp.Threading.Tasks;
 using System;
+using System.Collections.Generic;
 using DG.Tweening;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -11,6 +12,8 @@ public class GameWindow : BaseWindow
     private const float PopupRevealDuration = 1f;
     private const float ConfettiBurstDuration = 0.5f;
     private const float ConfettiFallDuration = 2f;
+    private const float NotificationSlideDuration = 0.4f;
+    private const float NotificationPulseScale = 1.12f;
     private const int ConfettiPieceCount = 100;
 
     private static readonly Color32[] ConfettiColors =
@@ -27,21 +30,46 @@ public class GameWindow : BaseWindow
     [SerializeField] private Text _timerValue;
     [SerializeField] private Text _levelLabel;
     [SerializeField] private Text _answerStats;
+    [SerializeField] private GameObject _quizNotification;
+    [SerializeField] private GameObject _secondStackCard;
+    [SerializeField] private GameObject _thirdStackCard;
+    [SerializeField] private Text _quizQueueCount;
+    [SerializeField] private BaseButton _answerQuizButton;
+    [SerializeField] private BaseButton _declineQuizButton;
 
+    private RectTransform _notificationRect;
+    private Vector2 _notificationRestPosition;
+    private Tween _notificationSlideTween;
+    private Tween _notificationPulseTween;
     private bool _winStarted;
+    private bool _winPending;
+    private bool _notificationExiting;
+    private bool _notificationButtonsRegistered;
+    private readonly Queue<int> _quizQueue = new Queue<int>();
 
     public override async UniTask OnOpen()
     {
         _winStarted = false;
+        _winPending = false;
+        _notificationRect = (RectTransform)_quizNotification.transform;
+        _notificationRestPosition = _notificationRect.anchoredPosition;
+        _notificationRect.localScale = Vector3.one;
+        _notificationExiting = false;
+        _quizNotification.SetActive(false);
         _pauseButton.gameObject.SetActive(true);
         _levelLabel.text = LevelManager.CurrentLevelLabel;
         UpdateAnswerStatistics();
         Gameplay.Started += OnStarted;
         Gameplay.Finished += OnFinished;
         Gameplay.AnswerStatisticsChanged += UpdateAnswerStatistics;
+        Gameplay.QuizRequested += EnqueueQuiz;
+        Gameplay.AllQuizzesResolved += OnAllQuizzesResolved;
         Gameplay.WireSystem.Win += OnWIn;
         _pauseButton.OnButtonClick += OnPauseClick;
         MouseManager.AddClickable(_pauseButton);
+        _answerQuizButton.OnButtonClick += OnAnswerQuizClick;
+        _declineQuizButton.OnButtonClick += OnDeclineQuizClick;
+        UpdateQuizNotification();
     }
 
     private void OnWIn()
@@ -49,7 +77,16 @@ public class GameWindow : BaseWindow
         if (_winStarted)
             return;
 
+        if (Gameplay.PendingQuizCount > 0)
+        {
+            _winPending = true;
+            StartNotificationPulse();
+            return;
+        }
+
         _winStarted = true;
+        _winPending = false;
+        StopNotificationPulse();
         Gameplay.TimerSystem.IsRunning = false;
         LevelManager.LoadLevel(LevelManager.LastId + 1);
         Gameplay.Win();
@@ -58,6 +95,16 @@ public class GameWindow : BaseWindow
         _pauseButton.gameObject.SetActive(false);
         MouseManager.RemoveClickable(_pauseButton);
         PlayVictoryCelebration();
+    }
+
+    private void OnAllQuizzesResolved()
+    {
+        if (!_winPending)
+            return;
+
+        _winPending = false;
+        StopNotificationPulse();
+        Gameplay.WireSystem.CheckWin();
     }
 
     private void PlayVictoryCelebration()
@@ -192,6 +239,151 @@ public class GameWindow : BaseWindow
         WindowManager.Open<LosePopup>();
     }
 
+    private void EnqueueQuiz(int nodeId)
+    {
+        _quizQueue.Enqueue(nodeId);
+        UpdateQuizNotification();
+    }
+
+    private void OnAnswerQuizClick(BaseButton button)
+    {
+        if (_quizQueue.Count == 0)
+            return;
+
+        var nodeId = _quizQueue.Dequeue();
+        UpdateQuizNotification();
+        Gameplay.StartQuiz(nodeId);
+        WindowManager.Open<QuizPopup>();
+    }
+
+    private void OnDeclineQuizClick(BaseButton button)
+    {
+        if (_quizQueue.Count == 0)
+            return;
+
+        _quizQueue.Dequeue();
+        Gameplay.RecordAnswer(false);
+        Gameplay.ResolveQuiz();
+        UpdateQuizNotification();
+    }
+
+    private void UpdateQuizNotification()
+    {
+        var hasQuestions = _quizQueue.Count > 0;
+        if (hasQuestions)
+            ShowQuizNotification();
+        else
+            HideQuizNotification();
+
+        _secondStackCard.SetActive(_quizQueue.Count > 1);
+        _thirdStackCard.SetActive(_quizQueue.Count > 2);
+        _quizQueueCount.text = _quizQueue.Count > 1
+            ? $"+{_quizQueue.Count - 1} ещё"
+            : "Новый вопрос";
+
+        if (hasQuestions && !_notificationButtonsRegistered)
+        {
+            MouseManager.AddClickable(_answerQuizButton);
+            MouseManager.AddClickable(_declineQuizButton);
+            _notificationButtonsRegistered = true;
+        }
+        else if (!hasQuestions && _notificationButtonsRegistered)
+        {
+            MouseManager.RemoveClickable(_answerQuizButton);
+            MouseManager.RemoveClickable(_declineQuizButton);
+            _notificationButtonsRegistered = false;
+        }
+    }
+
+    private void ShowQuizNotification()
+    {
+        if (!_quizNotification.activeSelf)
+        {
+            var parentRect = _notificationRect.parent as RectTransform;
+            var slideOffset = parentRect != null
+                ? parentRect.rect.width + _notificationRect.rect.width
+                : _notificationRect.rect.width * 2f;
+            _notificationRect.anchoredPosition =
+                _notificationRestPosition + Vector2.right * slideOffset;
+            _quizNotification.SetActive(true);
+            _notificationExiting = false;
+            _notificationSlideTween?.Kill();
+            _notificationSlideTween = _notificationRect
+                .DOAnchorPos(_notificationRestPosition, NotificationSlideDuration)
+                .SetEase(Ease.OutCubic)
+                .SetUpdate(true);
+            return;
+        }
+
+        if (!_notificationExiting)
+            return;
+
+        _notificationSlideTween?.Kill();
+        _notificationExiting = false;
+        var parent = _notificationRect.parent as RectTransform;
+        var offset = parent != null
+            ? parent.rect.width + _notificationRect.rect.width
+            : _notificationRect.rect.width * 2f;
+        _notificationRect.anchoredPosition = _notificationRestPosition + Vector2.right * offset;
+        _notificationSlideTween = _notificationRect
+            .DOAnchorPos(_notificationRestPosition, NotificationSlideDuration)
+            .SetEase(Ease.OutCubic)
+            .SetUpdate(true);
+    }
+
+    private void HideQuizNotification()
+    {
+        if (!_quizNotification.activeSelf)
+        {
+            StopNotificationPulse();
+            return;
+        }
+
+        if (_notificationExiting)
+            return;
+
+        StopNotificationPulse();
+        _notificationSlideTween?.Kill();
+        _notificationExiting = true;
+        var parent = _notificationRect.parent as RectTransform;
+        var offset = parent != null
+            ? parent.rect.width + _notificationRect.rect.width
+            : _notificationRect.rect.width * 2f;
+        _notificationSlideTween = _notificationRect
+            .DOAnchorPos(_notificationRestPosition - Vector2.right * offset, NotificationSlideDuration)
+            .SetEase(Ease.InCubic)
+            .SetUpdate(true)
+            .OnComplete(() =>
+            {
+                if (_quizQueue.Count > 0)
+                    return;
+
+                _quizNotification.SetActive(false);
+                _notificationRect.anchoredPosition = _notificationRestPosition;
+                _notificationExiting = false;
+            });
+    }
+
+    private void StartNotificationPulse()
+    {
+        if (!_quizNotification.activeSelf || _notificationPulseTween != null && _notificationPulseTween.IsActive())
+            return;
+
+        _notificationPulseTween = _notificationRect
+            .DOScale(NotificationPulseScale, 0.60f)
+            .SetEase(Ease.InOutSine)
+            .SetLoops(-1, LoopType.Yoyo)
+            .SetUpdate(true);
+    }
+
+    private void StopNotificationPulse()
+    {
+        _notificationPulseTween?.Kill();
+        _notificationPulseTween = null;
+        if (_notificationRect != null)
+            _notificationRect.localScale = Vector3.one;
+    }
+
     private void UpdateAnswerStatistics()
     {
         _answerStats.text =
@@ -205,7 +397,25 @@ public class GameWindow : BaseWindow
 
         Gameplay.Finished -= OnFinished;
         Gameplay.AnswerStatisticsChanged -= UpdateAnswerStatistics;
+        Gameplay.QuizRequested -= EnqueueQuiz;
+        Gameplay.AllQuizzesResolved -= OnAllQuizzesResolved;
         Gameplay.WireSystem.Win -= OnWIn;
+        _answerQuizButton.OnButtonClick -= OnAnswerQuizClick;
+        _declineQuizButton.OnButtonClick -= OnDeclineQuizClick;
+        if (_notificationButtonsRegistered)
+        {
+            MouseManager.RemoveClickable(_answerQuizButton);
+            MouseManager.RemoveClickable(_declineQuizButton);
+            _notificationButtonsRegistered = false;
+        }
+        _quizQueue.Clear();
+        UpdateQuizNotification();
+        _notificationSlideTween?.Kill();
+        _notificationSlideTween = null;
+        StopNotificationPulse();
+        _notificationRect.anchoredPosition = _notificationRestPosition;
+        _notificationExiting = false;
+        _quizNotification.SetActive(false);
         Gameplay.Finish();
     }
 }
