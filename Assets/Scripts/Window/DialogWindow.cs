@@ -523,6 +523,9 @@ public class DialogWindow : BaseWindow, IClickable
 
     private void StartPersistentLightFlicker()
     {
+        if (!_lightOverlay)
+            return;
+
         CancelPersistentLightFlicker();
         var alpha = _lightOverlay.color.a > 0f ? _lightOverlay.color.a : 0.4f;
         _lightOverlay.color = new Color(1f, 0.96f, 0.78f, alpha);
@@ -538,6 +541,9 @@ public class DialogWindow : BaseWindow, IClickable
             while (true)
             {
                 token.ThrowIfCancellationRequested();
+                if (!_lightOverlay)
+                    return;
+
                 SetLightAlpha(GetSoftFlickerAlpha(Time.unscaledTime));
                 await UniTask.Yield(PlayerLoopTiming.Update, token);
             }
@@ -554,6 +560,14 @@ public class DialogWindow : BaseWindow, IClickable
         _persistentLightFlickerCancellation = null;
     }
 
+    private void OnDestroy()
+    {
+        _isOpen = false;
+        CancelPersistentLightFlicker();
+        CancelStoryAnimation();
+        _cancellationTokenSource?.Cancel();
+    }
+
     private static float GetSoftFlickerAlpha(float time)
     {
         return 0.36f + 0.04f * Mathf.Sin(time * Mathf.PI * 4f);
@@ -561,6 +575,9 @@ public class DialogWindow : BaseWindow, IClickable
 
     private void SetLightAlpha(float alpha)
     {
+        if (!_lightOverlay)
+            return;
+
         var color = _lightOverlay.color;
         color.a = alpha;
         _lightOverlay.color = color;
