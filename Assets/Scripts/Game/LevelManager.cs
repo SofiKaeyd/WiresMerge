@@ -168,18 +168,20 @@ public static class LevelManager
 
     public static bool SkipTraining()
     {
+        var lastTrainingLevelIndex = -1;
         for (var index = 0; index < Config.Levels.Count; index++)
         {
             var levelId = Config.Levels[index].LevelId;
             if (levelId != null &&
-                !levelId.StartsWith("0_", StringComparison.Ordinal))
-            {
-                LoadLevel(index);
-                return true;
-            }
+                levelId.StartsWith("0_", StringComparison.Ordinal))
+                lastTrainingLevelIndex = index;
         }
 
-        return false;
+        if (lastTrainingLevelIndex < 0)
+            return false;
+
+        LoadLevel(lastTrainingLevelIndex);
+        return true;
     }
 
     public static void UnloadLevel()

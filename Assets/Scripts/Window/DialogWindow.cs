@@ -94,7 +94,7 @@ public class DialogWindow : BaseWindow, IClickable
         StopAnimation();
         if (!LevelManager.SkipTraining())
         {
-            Debug.LogError("Cannot skip training: working level 1_1 was not found.");
+            Debug.LogError("Cannot skip training: the last training level was not found.");
             return;
         }
 
