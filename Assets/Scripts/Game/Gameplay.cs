@@ -38,6 +38,12 @@ public class Gameplay : MonoBehaviour
         }
     }
 
+    public static void ClearUserName()
+    {
+        _userName = null;
+        PlayerPrefs.DeleteKey("UserName");
+    }
+
     public static int CorrectAnswers
     {
         get => PlayerPrefs.GetInt("CorrectAnswers", 0);

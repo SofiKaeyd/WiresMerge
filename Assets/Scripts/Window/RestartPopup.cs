@@ -115,19 +115,33 @@ public class RestartPopup : BaseWindow
         rowLayout.childForceExpandHeight = true;
 
         var rowElement = rowObject.GetComponent<LayoutElement>();
-        rowElement.preferredHeight = isHeader ? 48 : 52;
+        rowElement.preferredHeight = 60;
 
         for (var column = 0; column < values.Length; column++)
         {
-            var cell = CreateText(values[column], rowObject.transform, isHeader ? 20 : 21,
+            var cell = CreateText(values[column], rowObject.transform, isHeader ? 34 : 35,
                 column == 1 ? TextAnchor.MiddleLeft : TextAnchor.MiddleCenter);
             cell.fontStyle = isHeader ? FontStyle.Bold : FontStyle.Normal;
 
             var cellElement = cell.gameObject.AddComponent<LayoutElement>();
-            if (column == 0)
-                cellElement.preferredWidth = 42;
+            if (column == 1)
+            {
+                cellElement.minWidth = 0;
+                cellElement.preferredWidth = 0;
+                cellElement.flexibleWidth = 1;
+            }
             else
-                cellElement.flexibleWidth = column == 1 ? 4 : 1;
+            {
+                var columnWidth = column == 0
+                    ? 54
+                    : column == 2
+                        ? 135
+                        : column == 3
+                            ? 165
+                            : 205;
+                cellElement.minWidth = columnWidth;
+                cellElement.preferredWidth = columnWidth;
+            }
 
             if (!isHeader && column == 2)
                 cell.color = new Color32(167, 235, 159, 255);
@@ -240,6 +254,7 @@ public static class PlayerLeaderboard
     {
         var leaderboard = PlayerPrefs.GetString(StorageKey, string.Empty);
         PlayerPrefs.DeleteAll();
+        Gameplay.ClearUserName();
 
         if (!string.IsNullOrEmpty(leaderboard))
             PlayerPrefs.SetString(StorageKey, leaderboard);
