@@ -34,6 +34,7 @@ public class DialogWindow : BaseWindow, IClickable
     private RawImage _lightOverlay;
     private RawImage _darkeningOverlay;
     private bool _isOpen;
+    private CancellationTokenSource _persistentLightFlickerCancellation;
 
     public Collider2D Collider => _collider;
 
@@ -321,15 +322,28 @@ public class DialogWindow : BaseWindow, IClickable
     {
         if (node.HasParameter(DialogNode.StartAnimation1Parameter))
         {
+            CancelPersistentLightFlicker();
             _isStoryAnimationRunning = true;
             _storyAnimationCancellation = new CancellationTokenSource();
             RunStartAnimation1(_storyAnimationCancellation.Token).Forget();
         }
         else if (node.HasParameter(DialogNode.StartAnimation2Parameter))
         {
+            CancelPersistentLightFlicker();
             _isStoryAnimationRunning = true;
             _storyAnimationCancellation = new CancellationTokenSource();
             RunStartAnimation2(_storyAnimationCancellation.Token).Forget();
+        }
+        else if (node.HasParameter(DialogNode.StartAnimation3Parameter))
+        {
+            StartPersistentLightFlicker();
+        }
+        else if (node.HasParameter(DialogNode.StartAnimation4Parameter))
+        {
+            CancelPersistentLightFlicker();
+            _isStoryAnimationRunning = true;
+            _storyAnimationCancellation = new CancellationTokenSource();
+            RunStartAnimation4(_storyAnimationCancellation.Token).Forget();
         }
     }
 
@@ -349,7 +363,7 @@ public class DialogWindow : BaseWindow, IClickable
             await TransitionBackground(_homeOutsideBackground, 0.6f, false, token);
             await FlickerLight(2f, token);
             await TransitionBackground(_defaultBackgroundSprite, 0.6f, true, token);
-            SetLightAlpha(0.4f);
+            StartPersistentLightFlicker();
         }
         finally
         {
@@ -361,42 +375,76 @@ public class DialogWindow : BaseWindow, IClickable
     {
         try
         {
-            const float duration = 1.2f;
-            const float initialLightAlpha = 0.4f;
-            const float darknessAlpha = 0.90f;
+            await RunStartAnimation2Core(token);
+        }
+        finally
+        {
+            FinishStoryAnimation();
+        }
+    }
+
+    private async UniTask RunStartAnimation4(CancellationToken token)
+    {
+        try
+        {
+            const float duration = 1f;
+            const float initialAlpha = 0.4f;
+            const float peakAlpha = 0.9f;
             var elapsed = 0f;
-            var dialogueBackgroundColor = _defaultDialogueBackgroundColor;
-            var darkDialogueBackgroundColor = new Color(
-                dialogueBackgroundColor.r * 0.88f,
-                dialogueBackgroundColor.g * 0.88f,
-                dialogueBackgroundColor.b * 0.88f,
-                dialogueBackgroundColor.a);
+            _lightOverlay.color = new Color(1f, 0.96f, 0.78f, initialAlpha);
 
             while (elapsed < duration)
             {
                 token.ThrowIfCancellationRequested();
                 elapsed += Time.unscaledDeltaTime;
                 var progress = Mathf.Clamp01(elapsed / duration);
-                var remainingLight = 1f - progress;
-                var flicker = 0.4f + 0.6f * (0.5f + 0.5f * Mathf.Sin(elapsed * Mathf.PI * 12f));
-
-                SetLightAlpha(initialLightAlpha * flicker * remainingLight);
-                _darkeningOverlay.color = new Color(0f, 0f, 0f, darknessAlpha * progress);
-                _dialogueBackground.color = Color.Lerp(
-                    dialogueBackgroundColor,
-                    darkDialogueBackgroundColor,
-                    progress);
+                var flicker = 0.75f + 0.25f * (0.5f + 0.5f * Mathf.Sin(elapsed * Mathf.PI * 12f));
+                SetLightAlpha(Mathf.Lerp(initialAlpha, peakAlpha, progress) * flicker);
                 await UniTask.Yield(PlayerLoopTiming.Update, token);
             }
 
-            SetLightAlpha(0f);
-            _darkeningOverlay.color = new Color(0f, 0f, 0f, darknessAlpha);
-            _dialogueBackground.color = darkDialogueBackgroundColor;
+            SetLightAlpha(peakAlpha);
+            await RunStartAnimation2Core(token);
         }
         finally
         {
             FinishStoryAnimation();
         }
+    }
+
+    private async UniTask RunStartAnimation2Core(CancellationToken token)
+    {
+        const float duration = 1.2f;
+        var initialLightAlpha = Mathf.Max(_lightOverlay.color.a, 0.4f);
+        const float darknessAlpha = 0.90f;
+        var elapsed = 0f;
+        var dialogueBackgroundColor = _defaultDialogueBackgroundColor;
+        var darkDialogueBackgroundColor = new Color(
+            dialogueBackgroundColor.r * 0.88f,
+            dialogueBackgroundColor.g * 0.88f,
+            dialogueBackgroundColor.b * 0.88f,
+            dialogueBackgroundColor.a);
+
+        while (elapsed < duration)
+        {
+            token.ThrowIfCancellationRequested();
+            elapsed += Time.unscaledDeltaTime;
+            var progress = Mathf.Clamp01(elapsed / duration);
+            var remainingLight = 1f - progress;
+            var flicker = 0.4f + 0.6f * (0.5f + 0.5f * Mathf.Sin(elapsed * Mathf.PI * 12f));
+
+            SetLightAlpha(initialLightAlpha * flicker * remainingLight);
+            _darkeningOverlay.color = new Color(0f, 0f, 0f, darknessAlpha * progress);
+            _dialogueBackground.color = Color.Lerp(
+                dialogueBackgroundColor,
+                darkDialogueBackgroundColor,
+                progress);
+            await UniTask.Yield(PlayerLoopTiming.Update, token);
+        }
+
+        SetLightAlpha(0f);
+        _darkeningOverlay.color = new Color(0f, 0f, 0f, darknessAlpha);
+        _dialogueBackground.color = darkDialogueBackgroundColor;
     }
 
     private async UniTask FadeLight(
@@ -468,6 +516,39 @@ public class DialogWindow : BaseWindow, IClickable
         }
 
         SetLightAlpha(0.4f);
+    }
+
+    private void StartPersistentLightFlicker()
+    {
+        CancelPersistentLightFlicker();
+        var alpha = _lightOverlay.color.a > 0f ? _lightOverlay.color.a : 0.4f;
+        _lightOverlay.color = new Color(1f, 0.96f, 0.78f, alpha);
+
+        _persistentLightFlickerCancellation = new CancellationTokenSource();
+        RunPersistentLightFlicker(_persistentLightFlickerCancellation.Token).Forget();
+    }
+
+    private async UniTask RunPersistentLightFlicker(CancellationToken token)
+    {
+        try
+        {
+            while (true)
+            {
+                token.ThrowIfCancellationRequested();
+                SetLightAlpha(GetSoftFlickerAlpha(Time.unscaledTime));
+                await UniTask.Yield(PlayerLoopTiming.Update, token);
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    private void CancelPersistentLightFlicker()
+    {
+        _persistentLightFlickerCancellation?.Cancel();
+        _persistentLightFlickerCancellation?.Dispose();
+        _persistentLightFlickerCancellation = null;
     }
 
     private static float GetSoftFlickerAlpha(float time)
@@ -545,6 +626,7 @@ public class DialogWindow : BaseWindow, IClickable
     public override UniTask OnClose()
     {
         _isOpen = false;
+        CancelPersistentLightFlicker();
         CancelStoryAnimation();
         StopAnimation();
         ResetStoryVisuals();

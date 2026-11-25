@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!28 &-8047857336319298833
+--- !u!28 &-6923824509584610288
 Texture2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -48,7 +48,7 @@ Texture2D:
     offset: 0
     size: 0
     path: 
---- !u!114 &-7996899580212530536
+--- !u!114 &-6614583645505143429
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -61,7 +61,7 @@ MonoBehaviour:
   m_Name: DialogGraphInlineImage_15_SpriteAsset
   m_EditorClassIdentifier: 
   hashCode: -1599969929
-  material: {fileID: -113397647153126982}
+  material: {fileID: 1842114572811645818}
   materialHashCode: 61923429
   m_Version: 1.1.0
   m_FaceInfo:
@@ -86,7 +86,7 @@ MonoBehaviour:
     m_StrikethroughOffset: 0
     m_StrikethroughThickness: 0
     m_TabWidth: 0
-  spriteSheet: {fileID: -8047857336319298833}
+  spriteSheet: {fileID: -6923824509584610288}
   m_SpriteCharacterTable:
   - m_ElementType: 2
     m_Unicode: 65534
@@ -135,7 +135,7 @@ MonoBehaviour:
     sprite: {fileID: 0}
   spriteInfoList: []
   fallbackSpriteAssets: []
---- !u!21 &-7601073294795835504
+--- !u!21 &-2177455916029974500
 Material:
   serializedVersion: 8
   m_ObjectHideFlags: 0
@@ -159,7 +159,7 @@ Material:
     serializedVersion: 3
     m_TexEnvs:
     - _MainTex:
-        m_Texture: {fileID: 6656408703249006770}
+        m_Texture: {fileID: 30343112653767606}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Ints: []
@@ -176,47 +176,93 @@ Material:
     - _ClipRect: {r: -32767, g: -32767, b: 32767, a: 32767}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
---- !u!21 &-113397647153126982
-Material:
-  serializedVersion: 8
+--- !u!114 &-1189391046775093092
+MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: DialogGraphInlineImage_15_Material
-  m_Shader: {fileID: 4800000, guid: cf81c85f95fe47e1a27f6ae460cf182c, type: 3}
-  m_Parent: {fileID: 0}
-  m_ModifiedSerializedProperties: 0
-  m_ValidKeywords: []
-  m_InvalidKeywords: []
-  m_LightmapFlags: 4
-  m_EnableInstancingVariants: 0
-  m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
-  disabledShaderPasses: []
-  m_LockedProperties: 
-  m_SavedProperties:
-    serializedVersion: 3
-    m_TexEnvs:
-    - _MainTex:
-        m_Texture: {fileID: -8047857336319298833}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    m_Ints: []
-    m_Floats:
-    - _ColorMask: 15
-    - _CullMode: 0
-    - _Stencil: 0
-    - _StencilComp: 8
-    - _StencilOp: 0
-    - _StencilReadMask: 255
-    - _StencilWriteMask: 255
-    - _UseUIAlphaClip: 0
-    m_Colors:
-    - _ClipRect: {r: -32767, g: -32767, b: 32767, a: 32767}
-    - _Color: {r: 1, g: 1, b: 1, a: 1}
-  m_BuildTextureStacks: []
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 84a92b25f83d49b9bc132d206b370281, type: 3}
+  m_Name: DialogGraphInlineImage_14_SpriteAsset
+  m_EditorClassIdentifier: 
+  hashCode: 769838454
+  material: {fileID: -2177455916029974500}
+  materialHashCode: -2076879036
+  m_Version: 1.1.0
+  m_FaceInfo:
+    m_FaceIndex: 0
+    m_FamilyName: 
+    m_StyleName: 
+    m_PointSize: 0
+    m_Scale: 0
+    m_UnitsPerEM: 0
+    m_LineHeight: 0
+    m_AscentLine: 0
+    m_CapLine: 0
+    m_MeanLine: 0
+    m_Baseline: 0
+    m_DescentLine: 0
+    m_SuperscriptOffset: 0
+    m_SuperscriptSize: 0
+    m_SubscriptOffset: 0
+    m_SubscriptSize: 0
+    m_UnderlineOffset: 0
+    m_UnderlineThickness: 0
+    m_StrikethroughOffset: 0
+    m_StrikethroughThickness: 0
+    m_TabWidth: 0
+  spriteSheet: {fileID: 30343112653767606}
+  m_SpriteCharacterTable:
+  - m_ElementType: 2
+    m_Unicode: 65534
+    m_GlyphIndex: 0
+    m_Scale: 1
+    m_Name: SourceImage
+    m_HashCode: -391095814
+  - m_ElementType: 2
+    m_Unicode: 65534
+    m_GlyphIndex: 1
+    m_Scale: 1
+    m_Name: RecipientImage
+    m_HashCode: -397011940
+  m_SpriteGlyphTable:
+  - m_Index: 0
+    m_Metrics:
+      m_Width: 1
+      m_Height: 1
+      m_HorizontalBearingX: 0
+      m_HorizontalBearingY: 1
+      m_HorizontalAdvance: 1
+    m_GlyphRect:
+      m_X: 0
+      m_Y: 0
+      m_Width: 512
+      m_Height: 512
+    m_Scale: 1
+    m_AtlasIndex: 0
+    m_ClassDefinitionType: 0
+    sprite: {fileID: 0}
+  - m_Index: 1
+    m_Metrics:
+      m_Width: 1
+      m_Height: 1
+      m_HorizontalBearingX: 0
+      m_HorizontalBearingY: 1
+      m_HorizontalAdvance: 1
+    m_GlyphRect:
+      m_X: 0
+      m_Y: 514
+      m_Width: 512
+      m_Height: 512
+    m_Scale: 1
+    m_AtlasIndex: 0
+    m_ClassDefinitionType: 0
+    sprite: {fileID: 0}
+  spriteInfoList: []
+  fallbackSpriteAssets: []
 --- !u!114 &11400000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1084,7 +1130,7 @@ MonoBehaviour:
     IsCorrect: 1
     SourceImageUrl: https://drive.google.com/file/d/1u9kkqkVn_3N5-ZeUIWAneeLB2ZDDzMQS/view?usp=sharing
     RecipientImageUrl: https://drive.google.com/file/d/1Vf_dBJpIPI5budUgRPZatMTfAzHf76M7/view?usp=drive_link
-    InlineImageAsset: {fileID: 5725459762598938425}
+    InlineImageAsset: {fileID: -1189391046775093092}
     ParentIds: 0d000000
     ChildrenIds: 0f000000
   - Id: 15
@@ -1100,7 +1146,7 @@ MonoBehaviour:
     IsCorrect: 1
     SourceImageUrl: https://drive.google.com/file/d/1eMNSWI02_YvHwJXiogMwZnDt0frBwTSA/view?usp=drive_link
     RecipientImageUrl: https://drive.google.com/file/d/1YQf7v-qZdpk-i5nFoCual4I1Phkcf3Js/view?usp=drive_link
-    InlineImageAsset: {fileID: -7996899580212530536}
+    InlineImageAsset: {fileID: -6614583645505143429}
     ParentIds: 0e000000
     ChildrenIds: 10000000
   - Id: 16
@@ -2936,7 +2982,7 @@ MonoBehaviour:
     Speaker: "\u042D\u043D\u0437\u043E \u0424\u0430\u0440\u043D"
     Text: . . .
     IsPlayer: 0
-    Parameters: 
+    Parameters: startAnimation3
     Conditions: Win
     IsCorrect: 1
     SourceImageUrl: 
@@ -3151,7 +3197,7 @@ MonoBehaviour:
     Speaker: "\u042D\u043D\u0437\u043E \u0424\u0430\u0440\u043D"
     Text: . . .
     IsPlayer: 0
-    Parameters: 
+    Parameters: startAnimation4
     Conditions: Fall
     IsCorrect: 1
     SourceImageUrl: 
@@ -5480,94 +5526,7 @@ MonoBehaviour:
     ParentIds: 41010000
     ChildrenIds: 57000000
   QuestionsCount: 25
---- !u!114 &5725459762598938425
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 84a92b25f83d49b9bc132d206b370281, type: 3}
-  m_Name: DialogGraphInlineImage_14_SpriteAsset
-  m_EditorClassIdentifier: 
-  hashCode: 769838454
-  material: {fileID: -7601073294795835504}
-  materialHashCode: -2076879036
-  m_Version: 1.1.0
-  m_FaceInfo:
-    m_FaceIndex: 0
-    m_FamilyName: 
-    m_StyleName: 
-    m_PointSize: 0
-    m_Scale: 0
-    m_UnitsPerEM: 0
-    m_LineHeight: 0
-    m_AscentLine: 0
-    m_CapLine: 0
-    m_MeanLine: 0
-    m_Baseline: 0
-    m_DescentLine: 0
-    m_SuperscriptOffset: 0
-    m_SuperscriptSize: 0
-    m_SubscriptOffset: 0
-    m_SubscriptSize: 0
-    m_UnderlineOffset: 0
-    m_UnderlineThickness: 0
-    m_StrikethroughOffset: 0
-    m_StrikethroughThickness: 0
-    m_TabWidth: 0
-  spriteSheet: {fileID: 6656408703249006770}
-  m_SpriteCharacterTable:
-  - m_ElementType: 2
-    m_Unicode: 65534
-    m_GlyphIndex: 0
-    m_Scale: 1
-    m_Name: SourceImage
-    m_HashCode: -391095814
-  - m_ElementType: 2
-    m_Unicode: 65534
-    m_GlyphIndex: 1
-    m_Scale: 1
-    m_Name: RecipientImage
-    m_HashCode: -397011940
-  m_SpriteGlyphTable:
-  - m_Index: 0
-    m_Metrics:
-      m_Width: 1
-      m_Height: 1
-      m_HorizontalBearingX: 0
-      m_HorizontalBearingY: 1
-      m_HorizontalAdvance: 1
-    m_GlyphRect:
-      m_X: 0
-      m_Y: 0
-      m_Width: 512
-      m_Height: 512
-    m_Scale: 1
-    m_AtlasIndex: 0
-    m_ClassDefinitionType: 0
-    sprite: {fileID: 0}
-  - m_Index: 1
-    m_Metrics:
-      m_Width: 1
-      m_Height: 1
-      m_HorizontalBearingX: 0
-      m_HorizontalBearingY: 1
-      m_HorizontalAdvance: 1
-    m_GlyphRect:
-      m_X: 0
-      m_Y: 514
-      m_Width: 512
-      m_Height: 512
-    m_Scale: 1
-    m_AtlasIndex: 0
-    m_ClassDefinitionType: 0
-    sprite: {fileID: 0}
-  spriteInfoList: []
-  fallbackSpriteAssets: []
---- !u!28 &6656408703249006770
+--- !u!28 &30343112653767606
 Texture2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5615,3 +5574,44 @@ Texture2D:
     offset: 0
     size: 0
     path: 
+--- !u!21 &1842114572811645818
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: DialogGraphInlineImage_15_Material
+  m_Shader: {fileID: 4800000, guid: cf81c85f95fe47e1a27f6ae460cf182c, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _MainTex:
+        m_Texture: {fileID: -6923824509584610288}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _ColorMask: 15
+    - _CullMode: 0
+    - _Stencil: 0
+    - _StencilComp: 8
+    - _StencilOp: 0
+    - _StencilReadMask: 255
+    - _StencilWriteMask: 255
+    - _UseUIAlphaClip: 0
+    m_Colors:
+    - _ClipRect: {r: -32767, g: -32767, b: 32767, a: 32767}
+    - _Color: {r: 1, g: 1, b: 1, a: 1}
+  m_BuildTextureStacks: []

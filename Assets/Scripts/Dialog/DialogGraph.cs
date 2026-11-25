@@ -64,6 +64,8 @@ public class DialogNode
     public const string RecipientImageSpriteName = "RecipientImage";
     public const string StartAnimation1Parameter = "startAnimation1";
     public const string StartAnimation2Parameter = "startAnimation2";
+    public const string StartAnimation3Parameter = "startAnimation3";
+    public const string StartAnimation4Parameter = "startAnimation4";
 
     public int Id;
     public string Speaker;
@@ -116,7 +118,10 @@ public class DialogNode
             foreach (var name in paramNames)
             {
                 var trimmedName = name.Trim();
-                if (trimmedName == StartAnimation1Parameter || trimmedName == StartAnimation2Parameter)
+                if (trimmedName == StartAnimation1Parameter ||
+                    trimmedName == StartAnimation2Parameter ||
+                    trimmedName == StartAnimation3Parameter ||
+                    trimmedName == StartAnimation4Parameter)
                     continue;
 
                 args.Add(DynamicParameters.Get(name));
