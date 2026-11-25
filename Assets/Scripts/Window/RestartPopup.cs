@@ -78,7 +78,7 @@ public class RestartPopup : BaseWindow
 
     private void CreateTitle()
     {
-        var title = CreateText("Топ 5 учеников Энзо", _leaderboardRoot, 30, TextAnchor.MiddleCenter);
+        var title = CreateText("Топ 5 учеников Энзо", _leaderboardRoot, 35, TextAnchor.MiddleCenter);
         title.fontStyle = FontStyle.Bold;
         title.color = new Color32(255, 218, 151, 255);
 
