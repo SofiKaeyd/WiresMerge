@@ -11,11 +11,13 @@ public class WireSystem
     private int _bulbNeedToTurnOnCount = 0;
 
     public Action Win;
+    public bool IsLocked { get; private set; }
 
     public void Reset()
     {
         _bulbTurnedOnCount = 0;
         _bulbNeedToTurnOnCount = 0;
+        IsLocked = false;
     }
 
     public void AddWireCell(IWireCell wireCell)
@@ -115,6 +117,12 @@ public class WireSystem
 
     public void CheckWin()
     {
+        if (IsLocked)
+        {
+            Win?.Invoke();
+            return;
+        }
+
         //if (_bulbTurnedOnCount > 0)
         //    Win?.Invoke();
 
@@ -134,6 +142,7 @@ public class WireSystem
             if (_wireCells.Where(w => w.IsHighlighted).All(w => w.OutputUsedAngles.All(angle => angle.Value)))
             {
                 Debug.Log("WIN");
+                IsLocked = true;
                 Win?.Invoke();
             }
         }

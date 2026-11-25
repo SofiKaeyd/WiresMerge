@@ -37,8 +37,13 @@ public class GameWindow : BaseWindow
     [SerializeField] private BaseButton _answerQuizButton;
     [SerializeField] private BaseButton _declineQuizButton;
 
+    private RectTransform _notificationRect;
+    private Vector2 _notificationRestPosition;
+    private Tween _notificationSlideTween;
+    private Tween _notificationPulseTween;
     private bool _winStarted;
     private bool _winPending;
+    private bool _notificationExiting;
     private bool _notificationButtonsRegistered;
     private readonly Queue<int> _quizQueue = new Queue<int>();
 
@@ -46,6 +51,11 @@ public class GameWindow : BaseWindow
     {
         _winStarted = false;
         _winPending = false;
+        _notificationRect = (RectTransform)_quizNotification.transform;
+        _notificationRestPosition = _notificationRect.anchoredPosition;
+        _notificationRect.localScale = Vector3.one;
+        _notificationExiting = false;
+        _quizNotification.SetActive(false);
         _pauseButton.gameObject.SetActive(true);
         _levelLabel.text = LevelManager.CurrentLevelLabel;
         UpdateAnswerStatistics();
@@ -70,11 +80,13 @@ public class GameWindow : BaseWindow
         if (Gameplay.PendingQuizCount > 0)
         {
             _winPending = true;
+            StartNotificationPulse();
             return;
         }
 
         _winStarted = true;
         _winPending = false;
+        StopNotificationPulse();
         Gameplay.TimerSystem.IsRunning = false;
         LevelManager.LoadLevel(LevelManager.LastId + 1);
         Gameplay.Win();
@@ -91,6 +103,7 @@ public class GameWindow : BaseWindow
             return;
 
         _winPending = false;
+        StopNotificationPulse();
         Gameplay.WireSystem.CheckWin();
     }
 
@@ -257,7 +270,11 @@ public class GameWindow : BaseWindow
     private void UpdateQuizNotification()
     {
         var hasQuestions = _quizQueue.Count > 0;
-        _quizNotification.SetActive(hasQuestions);
+        if (hasQuestions)
+            ShowQuizNotification();
+        else
+            HideQuizNotification();
+
         _secondStackCard.SetActive(_quizQueue.Count > 1);
         _thirdStackCard.SetActive(_quizQueue.Count > 2);
         _quizQueueCount.text = _quizQueue.Count > 1
@@ -393,6 +410,12 @@ public class GameWindow : BaseWindow
         }
         _quizQueue.Clear();
         UpdateQuizNotification();
+        _notificationSlideTween?.Kill();
+        _notificationSlideTween = null;
+        StopNotificationPulse();
+        _notificationRect.anchoredPosition = _notificationRestPosition;
+        _notificationExiting = false;
+        _quizNotification.SetActive(false);
         Gameplay.Finish();
     }
 }
