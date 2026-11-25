@@ -108,14 +108,6 @@ public class Gameplay : MonoBehaviour
     {
     }
 
-    public static void BeginRun()
-    {
-        RunCorrectAnswers = 0;
-        RunWrongAnswers = 0;
-        RunLosses = 0;
-        PlayerPrefs.Save();
-    }
-
     public static void Play()
     {
         _levelCorrectAnswers = 0;
