@@ -14,8 +14,13 @@ public class QuizPopup : BaseWindow
     [SerializeField] private Image _closeButtonImage;
     [SerializeField] private Text _answerStats;
 
+    private bool _answered;
+    private bool _quizResolved;
+
     public override async UniTask OnOpen()
     {
+        _answered = false;
+        _quizResolved = false;
         Gameplay.TimerSystem.IsRunning = false;
         _closeButton.gameObject.SetActive(false);
         Gameplay.AnswerStatisticsChanged += UpdateAnswerStatistics;
@@ -66,8 +71,9 @@ public class QuizPopup : BaseWindow
 
     private async void OnButtonClick(BaseButton button)
     {
-        if (button is not QuizAnswerButton quizButton) return;
+        if (_answered || button is not QuizAnswerButton quizButton) return;
 
+        _answered = true;
         var quizSystem = Gameplay.QuizSystem;
         var isCorrect = quizSystem.NextStep(quizButton.Node);
 
@@ -112,5 +118,11 @@ public class QuizPopup : BaseWindow
         }
 
         Gameplay.TimerSystem.IsRunning = true;
+
+        if (_answered && !_quizResolved)
+        {
+            _quizResolved = true;
+            Gameplay.ResolveQuiz();
+        }
     }
 }

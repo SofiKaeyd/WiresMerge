@@ -113,7 +113,7 @@ public class WireSystem
         _bulbTurnedOnCount--;
     }
 
-    private void CheckWin()
+    public void CheckWin()
     {
         //if (_bulbTurnedOnCount > 0)
         //    Win?.Invoke();

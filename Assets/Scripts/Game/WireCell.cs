@@ -207,8 +207,7 @@ public class WireCell : MonoBehaviour, IClickable, IWireCell, IDisposable
         RotateToLeft();
         if (_quizNodeId > -1)
         {
-            Gameplay.QuizSystem.Start(QuizNodeId);
-            WindowManager.Open<QuizPopup>();
+            Gameplay.RequestQuiz(QuizNodeId);
             _quizNodeId = -1;
         }
     }
