@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class BaseInputField : MonoBehaviour, IClickable, IDisposable
@@ -14,13 +15,13 @@ public class BaseInputField : MonoBehaviour, IClickable, IDisposable
     [SerializeField] private Text caretText;
 
     private bool _isSelected = false;
+    private InputField _inputField;
+    private bool _inputFieldInitialized;
 
     private string _lastText;
     private bool caretVisible = true;
     private float caretBlinkRate = 0.5f;
     private float caretTimer = 0f;
-
-    private TouchScreenKeyboard _keyboard;
 
     public Collider2D Collider => _collider;
     public string InitialTextValue => _initialText.text;
@@ -29,69 +30,23 @@ public class BaseInputField : MonoBehaviour, IClickable, IDisposable
 
     public void Init(string initialText, string displayText)
     {
+        InitializeInputField();
         _isSelected = false;
         _initialText.text = initialText;
-        _displayText.text = displayText;
+        _inputField.text = displayText;
         UpdateVisuals();
     }
 
     public virtual void OnClick()
     {
         _isSelected = true;
+        _inputField.ActivateInputField();
         caretText.gameObject.SetActive(true);
         UpdateVisuals();
-#if UNITY_ANDROID
-        _keyboard = TouchScreenKeyboard.Open(DisplayTextValue, TouchScreenKeyboardType.Default);
-#endif
     }
 
     private void Update()
     {
-#if UNITY_ANDROID
-        if (_keyboard != null)
-        {
-            if (_keyboard.active)
-            {
-                if (_keyboard.text != DisplayTextValue)
-                {
-                    _displayText.text = _keyboard.text;
-                    OnValueChanged?.Invoke(_displayText.text);
-                    UpdateVisuals();
-                }
-            }
-            else if (_keyboard.done || _keyboard.wasCanceled)
-            {
-                _keyboard = null;
-                _isSelected = false;
-                UpdateVisuals();
-            }
-        }
-#else
-        if (_isSelected && Input.anyKeyDown)
-        {
-            foreach (var c in Input.inputString)
-            {
-                if (c == '\b') // Backspace
-                {
-                    if (_displayText.text.Length > 0)
-                    {
-                        _displayText.text = _displayText.text.Substring(0, _displayText.text.Length - 1);
-                    }
-                }
-                else if (c == '\n' || c == '\r') // Enter
-                {
-                    _isSelected = false;
-                }
-                else
-                {
-                    _displayText.text += c;
-                    _displayText.text = _displayText.text;
-                }
-            }
-            UpdateVisuals();
-            OnValueChanged?.Invoke(_displayText.text);
-        }
-#endif
         if (Input.GetMouseButtonDown(0))
         {
             var mousePosition = CameraManager.MainCamera.ScreenToWorldPoint(Input.mousePosition);
@@ -99,10 +54,62 @@ public class BaseInputField : MonoBehaviour, IClickable, IDisposable
             if (_isSelected && hit.collider != _collider)
             {
                 _isSelected = false;
+                _inputField.DeactivateInputField();
                 UpdateVisuals();
             }
         }
         UpdateCaret();
+    }
+
+    private void InitializeInputField()
+    {
+        EnsureEventSystem();
+
+        if (_inputField == null)
+            _inputField = GetComponent<InputField>();
+
+        if (_inputField == null)
+            _inputField = gameObject.AddComponent<InputField>();
+
+        if (_inputFieldInitialized)
+            return;
+
+        _inputField.textComponent = _displayText;
+        _inputField.placeholder = _initialText;
+        _inputField.targetGraphic = _background;
+        _inputField.transition = Selectable.Transition.None;
+        _inputField.lineType = InputField.LineType.SingleLine;
+        _inputField.characterLimit = Mathf.Max(0, _characterLimit);
+        _inputField.caretWidth = 0;
+        _inputField.onValueChanged.AddListener(HandleInputValueChanged);
+        _inputField.onEndEdit.AddListener(HandleInputEndEdit);
+        _inputFieldInitialized = true;
+    }
+
+    private static void EnsureEventSystem()
+    {
+        var eventSystem = EventSystem.current;
+        if (eventSystem == null)
+        {
+            var eventSystemObject = new GameObject("EventSystem");
+            eventSystem = eventSystemObject.AddComponent<EventSystem>();
+        }
+
+        if (eventSystem.GetComponent<StandaloneInputModule>() == null)
+            eventSystem.gameObject.AddComponent<StandaloneInputModule>();
+    }
+
+    private void HandleInputValueChanged(string text)
+    {
+        _displayText.text = text;
+        UpdateVisuals();
+        OnValueChanged?.Invoke(text);
+    }
+
+    private void HandleInputEndEdit(string text)
+    {
+        _isSelected = false;
+        UpdateVisuals();
     }
 
     private void UpdateVisuals()
@@ -163,6 +170,13 @@ public class BaseInputField : MonoBehaviour, IClickable, IDisposable
 
     public virtual void Dispose()
     {
+        if (_inputFieldInitialized)
+        {
+            _inputField.onValueChanged.RemoveListener(HandleInputValueChanged);
+            _inputField.onEndEdit.RemoveListener(HandleInputEndEdit);
+            _inputFieldInitialized = false;
+        }
+
         OnValueChanged = null;
     }
 }
