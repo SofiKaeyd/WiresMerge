@@ -39,6 +39,8 @@ public class DialogSystem
         if (node == null)
             return false;
 
+        LevelManager.RecordDialogNode(node);
+
         var children = Config.GetChildren(node);
         if (IsTerminalChoice(node))
             return false;

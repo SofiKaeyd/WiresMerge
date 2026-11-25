@@ -69,6 +69,7 @@ public class DialogWindow : BaseWindow, IClickable
         _dialogSystem = Gameplay.DialogSystem;
 
         _dialogSystem.OnNextStep += UpdateUI;
+        RestoreLevelBeginVisuals();
         _dialogSystem.Start(LevelManager.LastDialogNodeId);
 
         _pauseButton.OnButtonClick += OnPauseClick;
@@ -323,6 +324,7 @@ public class DialogWindow : BaseWindow, IClickable
         if (node.HasParameter(DialogNode.StartAnimation1Parameter))
         {
             CancelPersistentLightFlicker();
+            LevelManager.RecordStoryAnimation(DialogNode.StartAnimation1Parameter);
             _isStoryAnimationRunning = true;
             _storyAnimationCancellation = new CancellationTokenSource();
             RunStartAnimation1(_storyAnimationCancellation.Token).Forget();
@@ -330,6 +332,7 @@ public class DialogWindow : BaseWindow, IClickable
         else if (node.HasParameter(DialogNode.StartAnimation2Parameter))
         {
             CancelPersistentLightFlicker();
+            LevelManager.RecordStoryAnimation(DialogNode.StartAnimation2Parameter);
             _isStoryAnimationRunning = true;
             _storyAnimationCancellation = new CancellationTokenSource();
             RunStartAnimation2(_storyAnimationCancellation.Token).Forget();
@@ -614,6 +617,27 @@ public class DialogWindow : BaseWindow, IClickable
             _lightOverlay.color = new Color(1f, 0.96f, 0.78f, 0f);
         if (_darkeningOverlay != null)
             _darkeningOverlay.color = Color.clear;
+    }
+
+    private void RestoreLevelBeginVisuals()
+    {
+        if (!LevelManager.ConsumeLevelBeginVisualRestore() ||
+            _lightOverlay == null ||
+            _darkeningOverlay == null)
+            return;
+
+        if (LevelManager.LevelBeginHasDarkness)
+        {
+            _darkeningOverlay.color = new Color(0f, 0f, 0f, 0.9f);
+            _dialogueBackground.color = new Color(
+                _defaultDialogueBackgroundColor.r * 0.88f,
+                _defaultDialogueBackgroundColor.g * 0.88f,
+                _defaultDialogueBackgroundColor.b * 0.88f,
+                _defaultDialogueBackgroundColor.a);
+        }
+
+        if (LevelManager.LevelBeginHasLight)
+            _lightOverlay.color = new Color(1f, 0.96f, 0.78f, 0.4f);
     }
 
     private void StopAnimation()

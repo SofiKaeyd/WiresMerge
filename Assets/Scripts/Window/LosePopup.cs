@@ -25,9 +25,8 @@ public class LosePopup : BaseWindow
     private void OnReturnButton(BaseButton button)
     {
         Gameplay.Finish();
-        LevelManager.LoadLevel(LevelManager.LastId);
-        LevelManager.ShowLevel();
-        WindowManager.ClosePopup();
+        LevelManager.LoadLevel(LevelManager.LastId, true);
+        WindowManager.Open<DialogWindow>();
     }
 
     private void OnExitButton(BaseButton button)

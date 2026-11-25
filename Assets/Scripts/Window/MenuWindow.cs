@@ -22,7 +22,7 @@ public class MenuWindow : BaseWindow
     {
         Gameplay.BeginRun();
         await SceneHandler.LoadScene(SceneHandler.GameScene);
-        LevelManager.LoadLevel(LevelManager.LastId);
+        LevelManager.LoadLevel(LevelManager.LastId, LevelManager.HasLevelBegin);
         WindowManager.Open<DialogWindow>();
     }
 

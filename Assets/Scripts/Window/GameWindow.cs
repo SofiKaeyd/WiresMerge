@@ -12,6 +12,8 @@ public class GameWindow : BaseWindow
     private const float PopupRevealDuration = 1f;
     private const float ConfettiBurstDuration = 0.5f;
     private const float ConfettiFallDuration = 2f;
+    private const float NotificationSlideDuration = 0.4f;
+    private const float NotificationPulseScale = 1.12f;
     private const int ConfettiPieceCount = 100;
 
     private static readonly Color32[] ConfettiColors =
@@ -274,6 +276,95 @@ public class GameWindow : BaseWindow
             MouseManager.RemoveClickable(_declineQuizButton);
             _notificationButtonsRegistered = false;
         }
+    }
+
+    private void ShowQuizNotification()
+    {
+        if (!_quizNotification.activeSelf)
+        {
+            var parentRect = _notificationRect.parent as RectTransform;
+            var slideOffset = parentRect != null
+                ? parentRect.rect.width + _notificationRect.rect.width
+                : _notificationRect.rect.width * 2f;
+            _notificationRect.anchoredPosition =
+                _notificationRestPosition + Vector2.right * slideOffset;
+            _quizNotification.SetActive(true);
+            _notificationExiting = false;
+            _notificationSlideTween?.Kill();
+            _notificationSlideTween = _notificationRect
+                .DOAnchorPos(_notificationRestPosition, NotificationSlideDuration)
+                .SetEase(Ease.OutCubic)
+                .SetUpdate(true);
+            return;
+        }
+
+        if (!_notificationExiting)
+            return;
+
+        _notificationSlideTween?.Kill();
+        _notificationExiting = false;
+        var parent = _notificationRect.parent as RectTransform;
+        var offset = parent != null
+            ? parent.rect.width + _notificationRect.rect.width
+            : _notificationRect.rect.width * 2f;
+        _notificationRect.anchoredPosition = _notificationRestPosition + Vector2.right * offset;
+        _notificationSlideTween = _notificationRect
+            .DOAnchorPos(_notificationRestPosition, NotificationSlideDuration)
+            .SetEase(Ease.OutCubic)
+            .SetUpdate(true);
+    }
+
+    private void HideQuizNotification()
+    {
+        if (!_quizNotification.activeSelf)
+        {
+            StopNotificationPulse();
+            return;
+        }
+
+        if (_notificationExiting)
+            return;
+
+        StopNotificationPulse();
+        _notificationSlideTween?.Kill();
+        _notificationExiting = true;
+        var parent = _notificationRect.parent as RectTransform;
+        var offset = parent != null
+            ? parent.rect.width + _notificationRect.rect.width
+            : _notificationRect.rect.width * 2f;
+        _notificationSlideTween = _notificationRect
+            .DOAnchorPos(_notificationRestPosition - Vector2.right * offset, NotificationSlideDuration)
+            .SetEase(Ease.InCubic)
+            .SetUpdate(true)
+            .OnComplete(() =>
+            {
+                if (_quizQueue.Count > 0)
+                    return;
+
+                _quizNotification.SetActive(false);
+                _notificationRect.anchoredPosition = _notificationRestPosition;
+                _notificationExiting = false;
+            });
+    }
+
+    private void StartNotificationPulse()
+    {
+        if (!_quizNotification.activeSelf || _notificationPulseTween != null && _notificationPulseTween.IsActive())
+            return;
+
+        _notificationPulseTween = _notificationRect
+            .DOScale(NotificationPulseScale, 0.60f)
+            .SetEase(Ease.InOutSine)
+            .SetLoops(-1, LoopType.Yoyo)
+            .SetUpdate(true);
+    }
+
+    private void StopNotificationPulse()
+    {
+        _notificationPulseTween?.Kill();
+        _notificationPulseTween = null;
+        if (_notificationRect != null)
+            _notificationRect.localScale = Vector3.one;
     }
 
     private void UpdateAnswerStatistics()
