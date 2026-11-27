@@ -204,7 +204,7 @@ public class WireCell : MonoBehaviour, IClickable, IWireCell, IDisposable
 
     public void OnClick()
     {
-        if (Gameplay.WireSystem.IsLocked)
+        if (Gameplay.HintSystem != null && Gameplay.HintSystem.TrySelectCell(this))
             return;
 
         RotateToLeft();

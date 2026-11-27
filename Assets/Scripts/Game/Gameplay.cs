@@ -21,6 +21,7 @@ public class Gameplay : MonoBehaviour
     public static TimerSystem TimerSystem { get; private set; }
     public static DialogSystem DialogSystem { get; private set; }
     public static QuizSystem QuizSystem { get; private set; }
+    public static HintSystem HintSystem { get; private set; }
     public static int PendingQuizCount => _pendingQuizCount;
 
     public static string UserName
@@ -98,6 +99,7 @@ public class Gameplay : MonoBehaviour
             WireSystem = new WireSystem();
             DialogSystem = new DialogSystem();
             QuizSystem = new QuizSystem();
+            HintSystem = new HintSystem();
         }
         else
             Destroy(gameObject);
@@ -123,12 +125,14 @@ public class Gameplay : MonoBehaviour
         TimerSystem.Duration = LevelManager.LastTimerDuration;
 
         Started?.Invoke();
+        HintSystem.BeginLevel();
     }
 
     public static void Finish()
     {
         _levelCorrectAnswers = 0;
         _pendingQuizCount = 0;
+        HintSystem.EndLevel();
         WireSystem.Reset();
 
         TimerSystem.IntervalElapsed = null;
@@ -217,6 +221,7 @@ public class Gameplay : MonoBehaviour
 
     public static void Win()
     {
+        HintSystem.ClearSolution();
         Score += _levelCorrectAnswers;
         _levelCorrectAnswers = 0;
     }

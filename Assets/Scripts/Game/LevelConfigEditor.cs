@@ -204,6 +204,8 @@ public class LevelsConfigWindow : EditorWindow
         // Timer duration
         selectedLevel.TimerDuration = EditorGUILayout.FloatField("Timer Duration", selectedLevel.TimerDuration);
 
+        selectedLevel.HintCount = EditorGUILayout.IntField("Hint Count", selectedLevel.HintCount);
+
         EditorGUILayout.Space();
 
         // Wire Cells section
@@ -454,6 +456,7 @@ public class LevelsConfigWindow : EditorWindow
             LevelId = GetNextLevelId(),
             DialogNodeId = 0,
             TimerDuration = 300f,
+            HintCount = 2,
             WireCells = new List<WireCellData>()
         };
 

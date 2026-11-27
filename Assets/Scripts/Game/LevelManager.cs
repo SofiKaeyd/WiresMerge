@@ -6,6 +6,10 @@ public static class LevelManager
 {
     private static LevelsConfig _config;
     private static LevelConfig _currentConfig;
+    private static int _remainingHints;
+
+    public static event Action<int> HintsChanged;
+    public static int RemainingHints => _remainingHints;
 
     private static LevelsConfig Config 
     {
@@ -95,7 +99,7 @@ public static class LevelManager
 
     public static void LoadLevel(int id, bool restartAtLevelBegin = false)
     {
-        ShouldRestoreLevelBeginVisuals = false;
+        //ShouldRestoreLevelBeginVisuals = false;
         var previousId = LastId;
         if (previousId == id)
             Gameplay.ClearLevelAttemptQuizResults(id);
@@ -113,12 +117,26 @@ public static class LevelManager
                 ? LevelBeginNodeId
                 : _currentConfig.DialogNodeId;
             LastTimerDuration = _currentConfig.TimerDuration;
+            _remainingHints = Mathf.Max(0, _currentConfig.HintCount);
         }
         else
         {
             // GameObject finish dialog
             LastDialogNodeId = 127;
+            _remainingHints = 0;
         }
+
+        HintsChanged?.Invoke(_remainingHints);
+    }
+
+    public static bool TryConsumeHint()
+    {
+        if (_remainingHints <= 0)
+            return false;
+
+        _remainingHints--;
+        HintsChanged?.Invoke(_remainingHints);
+        return true;
     }
 
     public static void RecordDialogNode(DialogNode node)

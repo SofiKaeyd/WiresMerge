@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -12,6 +12,7 @@ public class WireSystem
 
     public Action Win;
     public bool IsLocked { get; private set; }
+    public IReadOnlyList<IWireCell> Cells => _wireCells;
 
     public void Reset()
     {

@@ -36,6 +36,9 @@ public class GameWindow : BaseWindow
     [SerializeField] private Text _quizQueueCount;
     [SerializeField] private BaseButton _answerQuizButton;
     [SerializeField] private BaseButton _declineQuizButton;
+    [SerializeField] private BaseButton _hintButton;
+    [SerializeField] private Text _hintCount;
+    [SerializeField] private Text _hintInstruction;
 
     private RectTransform _notificationRect;
     private Vector2 _notificationRestPosition;
@@ -46,11 +49,18 @@ public class GameWindow : BaseWindow
     private bool _notificationExiting;
     private bool _notificationButtonsRegistered;
     private readonly Queue<int> _quizQueue = new Queue<int>();
+    private HintAnimationManager _hintAnimationManager;
+
+    private void Awake()
+    {
+        _hintAnimationManager = new HintAnimationManager(_hintInstruction);
+    }
 
     public override async UniTask OnOpen()
     {
         _winStarted = false;
         _winPending = false;
+        _hintAnimationManager.Reset();
         _notificationRect = (RectTransform)_quizNotification.transform;
         _notificationRestPosition = _notificationRect.anchoredPosition;
         _notificationRect.localScale = Vector3.one;
@@ -58,6 +68,7 @@ public class GameWindow : BaseWindow
         _quizNotification.SetActive(false);
         _pauseButton.gameObject.SetActive(true);
         _levelLabel.text = LevelManager.CurrentLevelLabel;
+        UpdateHintCount(LevelManager.RemainingHints);
         UpdateAnswerStatistics();
         Gameplay.Started += OnStarted;
         Gameplay.Finished += OnFinished;
@@ -65,11 +76,35 @@ public class GameWindow : BaseWindow
         Gameplay.QuizRequested += EnqueueQuiz;
         Gameplay.AllQuizzesResolved += OnAllQuizzesResolved;
         Gameplay.WireSystem.Win += OnWIn;
+        Gameplay.HintSystem.SelectionRequested += _hintAnimationManager.ShowInstruction;
+        Gameplay.HintSystem.SelectionDismissed += _hintAnimationManager.HideInstruction;
+        Gameplay.HintSystem.HintCellStateChanged += _hintAnimationManager.ShowCellState;
+        Gameplay.HintSystem.VisualsReset += _hintAnimationManager.Reset;
+        Gameplay.HintSystem.SolutionChanged += OnHintSolutionChanged;
+        LevelManager.HintsChanged += UpdateHintCount;
         _pauseButton.OnButtonClick += OnPauseClick;
         MouseManager.AddClickable(_pauseButton);
+        _hintButton.OnButtonClick += OnHintClick;
+        MouseManager.AddClickable(_hintButton);
         _answerQuizButton.OnButtonClick += OnAnswerQuizClick;
         _declineQuizButton.OnButtonClick += OnDeclineQuizClick;
         UpdateQuizNotification();
+    }
+
+    private void OnHintClick(BaseButton button)
+    {
+        Gameplay.HintSystem.ActivateHint();
+    }
+
+    private void UpdateHintCount(int remainingHints)
+    {
+        _hintCount.text = $"Подсказка: {remainingHints}";
+        _hintButton.Collider.enabled = remainingHints > 0 && Gameplay.HintSystem.HasSolution;
+    }
+
+    private void OnHintSolutionChanged(bool hasSolution)
+    {
+        _hintButton.Collider.enabled = hasSolution && LevelManager.RemainingHints > 0;
     }
 
     private void OnWIn()
@@ -394,12 +429,21 @@ public class GameWindow : BaseWindow
     {
         _pauseButton.OnButtonClick -= OnPauseClick;
         MouseManager.RemoveClickable(_pauseButton);
+        _hintButton.OnButtonClick -= OnHintClick;
+        MouseManager.RemoveClickable(_hintButton);
 
         Gameplay.Finished -= OnFinished;
         Gameplay.AnswerStatisticsChanged -= UpdateAnswerStatistics;
         Gameplay.QuizRequested -= EnqueueQuiz;
         Gameplay.AllQuizzesResolved -= OnAllQuizzesResolved;
         Gameplay.WireSystem.Win -= OnWIn;
+        Gameplay.HintSystem.SelectionRequested -= _hintAnimationManager.ShowInstruction;
+        Gameplay.HintSystem.SelectionDismissed -= _hintAnimationManager.HideInstruction;
+        Gameplay.HintSystem.HintCellStateChanged -= _hintAnimationManager.ShowCellState;
+        Gameplay.HintSystem.VisualsReset -= _hintAnimationManager.Reset;
+        Gameplay.HintSystem.SolutionChanged -= OnHintSolutionChanged;
+        LevelManager.HintsChanged -= UpdateHintCount;
+        _hintAnimationManager.Reset();
         _answerQuizButton.OnButtonClick -= OnAnswerQuizClick;
         _declineQuizButton.OnButtonClick -= OnDeclineQuizClick;
         if (_notificationButtonsRegistered)

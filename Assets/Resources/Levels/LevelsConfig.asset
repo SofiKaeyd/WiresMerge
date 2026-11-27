@@ -16,6 +16,7 @@ MonoBehaviour:
   - LevelId: "0_1"
     DialogNodeId: 0
     TimerDuration: 600
+    HintCount: 2
     WireCells:
     - Position: {x: -1.9848855, y: -0.6085809, z: 0}
       ShapeType: 0
@@ -76,6 +77,7 @@ MonoBehaviour:
   - LevelId: "0_2"
     DialogNodeId: 20
     TimerDuration: 600
+    HintCount: 2
     WireCells:
     - Position: {x: -1.1920118, y: 0.024023369, z: 0.5}
       ShapeType: 1
@@ -129,6 +131,7 @@ MonoBehaviour:
   - LevelId: "0_3"
     DialogNodeId: 29
     TimerDuration: 600
+    HintCount: 2
     WireCells:
     - Position: {x: -3.5088463, y: -0.45005187, z: -1.991162}
       ShapeType: 0
@@ -259,6 +262,7 @@ MonoBehaviour:
   - LevelId: "0_4"
     DialogNodeId: 35
     TimerDuration: 600
+    HintCount: 2
     WireCells:
     - Position: {x: -3.7520118, y: 1.2989649, z: 0.5}
       ShapeType: 1
@@ -438,6 +442,7 @@ MonoBehaviour:
   - LevelId: "1_1"
     DialogNodeId: 46
     TimerDuration: 600
+    HintCount: 2
     WireCells:
     - Position: {x: 2.54, y: -1.24, z: -1.9582891}
       ShapeType: 0
@@ -568,6 +573,7 @@ MonoBehaviour:
   - LevelId: "1_2"
     DialogNodeId: 82
     TimerDuration: 300
+    HintCount: 2
     WireCells:
     - Position: {x: -1.1620117, y: -1.6019531, z: 0.5}
       ShapeType: 1
@@ -677,6 +683,7 @@ MonoBehaviour:
   - LevelId: "1_3"
     DialogNodeId: 102
     TimerDuration: 300
+    HintCount: 2
     WireCells:
     - Position: {x: -3.53, y: 0.3, z: 0}
       ShapeType: 0
@@ -828,6 +835,7 @@ MonoBehaviour:
   - LevelId: "1_4"
     DialogNodeId: 115
     TimerDuration: 240
+    HintCount: 2
     WireCells:
     - Position: {x: 2.2479882, y: 1.2989649, z: 0.5}
       ShapeType: 1
@@ -958,6 +966,7 @@ MonoBehaviour:
   - LevelId: "1_5"
     DialogNodeId: 120
     TimerDuration: 240
+    HintCount: 2
     WireCells:
     - Position: {x: 3.6879883, y: 1.2389649, z: 0.5}
       ShapeType: 1
