@@ -142,18 +142,44 @@ public class Gameplay : MonoBehaviour
 
     public static void RecordAnswer(bool isCorrect)
     {
+        var levelCorrectAnswersKey = $"LevelCorrectAnswers{LevelManager.LastId}";
+        var levelWrongAnswersKey = $"LevelWrongAnswers{LevelManager.LastId}";
         if (isCorrect)
         {
             CorrectAnswers++;
             RunCorrectAnswers++;
             _levelCorrectAnswers++;
+            PlayerPrefs.SetInt(
+                levelCorrectAnswersKey,
+                PlayerPrefs.GetInt(levelCorrectAnswersKey, 0) + 1);
         }
         else
         {
             WrongAnswers++;
             RunWrongAnswers++;
+            PlayerPrefs.SetInt(
+                levelWrongAnswersKey,
+                PlayerPrefs.GetInt(levelWrongAnswersKey, 0) + 1);
         }
 
+        PlayerPrefs.Save();
+        AnswerStatisticsChanged?.Invoke();
+    }
+
+    public static void ClearLevelAttemptQuizResults(int levelId)
+    {
+        var levelCorrectAnswersKey = $"LevelCorrectAnswers{levelId}";
+        var levelWrongAnswersKey = $"LevelWrongAnswers{levelId}";
+        var levelCorrectAnswers = PlayerPrefs.GetInt(levelCorrectAnswersKey, 0);
+        var levelWrongAnswers = PlayerPrefs.GetInt(levelWrongAnswersKey, 0);
+
+        CorrectAnswers = Math.Max(0, CorrectAnswers - levelCorrectAnswers);
+        WrongAnswers = Math.Max(0, WrongAnswers - levelWrongAnswers);
+        RunCorrectAnswers = Math.Max(0, RunCorrectAnswers - levelCorrectAnswers);
+        RunWrongAnswers = Math.Max(0, RunWrongAnswers - levelWrongAnswers);
+
+        PlayerPrefs.DeleteKey(levelCorrectAnswersKey);
+        PlayerPrefs.DeleteKey(levelWrongAnswersKey);
         PlayerPrefs.Save();
         AnswerStatisticsChanged?.Invoke();
     }

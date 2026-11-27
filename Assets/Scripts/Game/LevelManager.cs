@@ -97,6 +97,9 @@ public static class LevelManager
     {
         ShouldRestoreLevelBeginVisuals = false;
         var previousId = LastId;
+        if (previousId == id)
+            Gameplay.ClearLevelAttemptQuizResults(id);
+
         LastId = id;
         if (Config.Levels.Count > id)
         {
